@@ -2,51 +2,42 @@
   <div class='page-content'>
     <!-- 搜索区域 -->
     <div class="search-section">
-      <el-form label-width="80px">
+      <el-form label-width="100px">
         <!-- 第一行搜索条件 -->
         <el-row :gutter="20">
           <el-col :xs="24" :sm="12" :lg="6">
-            <el-form-item label="用户名：">
-              <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :xs="24" :sm="12" :lg="6">
-            <el-form-item label="用户ID：">
-              <el-input v-model="searchForm.userId" placeholder="请输入用户ID" clearable></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :xs="24" :sm="12" :lg="6">
-            <el-form-item label="手机号：">
-              <el-input v-model="searchForm.phone" placeholder="请输入手机号" clearable></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :xs="24" :sm="12" :lg="6">
-            <el-form-item label="提现状态：">
-              <el-select v-model="searchForm.status" clearable placeholder="请选择状态" style="width: 100%">
-                <el-option label="待审核" value="0"></el-option>
-                <el-option label="已通过" value="1"></el-option>
-                <el-option label="已拒绝" value="2"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        
-        <!-- 第二行搜索条件 -->
-        <el-row :gutter="20">
-          <el-col :xs="24" :sm="12" :lg="6">
             <el-form-item label="支付方式：">
-              <el-select v-model="searchForm.payType" clearable placeholder="请选择支付方式" style="width: 100%">
-                <el-option 
-                  v-for="method in paymentMethods" 
-                  :key="method.type" 
-                  :label="method.name" 
-                  :value="method.type">
+              <el-select v-model="searchForm.methodCode" clearable placeholder="请选择支付方式" style="width: 100%">
+                <el-option label="ABA银行" value="aba">
+                  <i class="el-icon-bank-card" style="color: #409EFF; margin-right: 8px;"></i>
+                  ABA银行
+                </el-option>
+                <el-option label="汇旺支付" value="huiwang">
+                  <i class="el-icon-mobile" style="color: #E6A23C; margin-right: 8px;"></i>
+                  汇旺支付
+                </el-option>
+                <el-option label="USDT钱包" value="usdt">
+                  <i class="el-icon-coin" style="color: #67C23A; margin-right: 8px;"></i>
+                  USDT钱包
                 </el-option>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="12" :lg="6">
-            <el-form-item label="申请时间：">
+            <el-form-item label="账户状态：">
+              <el-select v-model="searchForm.isActive" clearable placeholder="请选择状态" style="width: 100%">
+                <el-option label="启用" :value="1"></el-option>
+                <el-option label="禁用" :value="0"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="账户名称：">
+              <el-input v-model="searchForm.accountName" placeholder="请输入账户名称" clearable></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="创建时间：">
               <el-date-picker
                 v-model="searchForm.dateRange"
                 type="datetimerange"
@@ -58,34 +49,23 @@
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col :xs="24" :sm="12" :lg="6">
-            <el-form-item label="金额范围：">
-              <el-input-number v-model="searchForm.minAmount" placeholder="最小金额" style="width: 48%"></el-input-number>
-              <span style="margin: 0 2%">-</span>
-              <el-input-number v-model="searchForm.maxAmount" placeholder="最大金额" style="width: 48%"></el-input-number>
-            </el-form-item>
-          </el-col>
-          <el-col :xs="24" :sm="12" :lg="6">
-            <el-form-item label="审核员：">
-              <el-select v-model="searchForm.adminName" clearable placeholder="请选择审核员" style="width: 100%">
-                <el-option 
-                  v-for="admin in adminUsers" 
-                  :key="admin.id" 
-                  :label="admin.nickname" 
-                  :value="admin.username">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
         </el-row>
         
-        <!-- 第三行操作按钮 -->
+        <!-- 第二行操作按钮 -->
         <el-row :gutter="20">
           <el-col :span="24" style="text-align: right;">
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="handleReset">重置</el-button>
-            <el-button type="success" plain @click="handleExport">导出</el-button>
-            <el-button type="info" plain @click="loadStatistics">刷新统计</el-button>
+            <el-button type="primary" @click="handleSearch">
+              <i class="el-icon-search"></i> 搜索
+            </el-button>
+            <el-button @click="handleReset">
+              <i class="el-icon-refresh"></i> 重置
+            </el-button>
+            <el-button type="success" @click="showAddDialog">
+              <i class="el-icon-plus"></i> 添加账户
+            </el-button>
+            <el-button type="info" plain @click="handleExport">
+              <i class="el-icon-download"></i> 导出
+            </el-button>
           </el-col>
         </el-row>
       </el-form>
@@ -94,40 +74,70 @@
     <!-- 统计信息 -->
     <div class="statistics-section" v-if="statistics">
       <el-row :gutter="20">
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value">${{ statistics.totalAmount }}</div>
-            <div class="stat-label">总提现金额</div>
+        <el-col :xs="12" :sm="8" :lg="4">
+          <div class="stat-card total">
+            <div class="stat-icon">
+              <i class="el-icon-s-data"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalCount }}</div>
+              <div class="stat-label">总账户数</div>
+            </div>
           </div>
         </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value">${{ statistics.totalFee }}</div>
-            <div class="stat-label">总手续费</div>
+        <el-col :xs="12" :sm="8" :lg="4">
+          <div class="stat-card aba">
+            <div class="stat-icon">
+              <i class="el-icon-bank-card"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.abaCount }}</div>
+              <div class="stat-label">ABA银行</div>
+            </div>
           </div>
         </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value">${{ statistics.totalActual }}</div>
-            <div class="stat-label">总实际到账</div>
+        <el-col :xs="12" :sm="8" :lg="4">
+          <div class="stat-card huiwang">
+            <div class="stat-icon">
+              <i class="el-icon-mobile"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.huiwangCount }}</div>
+              <div class="stat-label">汇旺支付</div>
+            </div>
           </div>
         </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value stat-pending">{{ statistics.pendingCount }}</div>
-            <div class="stat-label">待审核</div>
+        <el-col :xs="12" :sm="8" :lg="4">
+          <div class="stat-card usdt">
+            <div class="stat-icon">
+              <i class="el-icon-coin"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.usdtCount }}</div>
+              <div class="stat-label">USDT钱包</div>
+            </div>
           </div>
         </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value stat-approved">{{ statistics.approvedCount }}</div>
-            <div class="stat-label">已通过</div>
+        <el-col :xs="12" :sm="8" :lg="4">
+          <div class="stat-card active">
+            <div class="stat-icon">
+              <i class="el-icon-check"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.activeCount }}</div>
+              <div class="stat-label">启用账户</div>
+            </div>
           </div>
         </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value stat-rejected">{{ statistics.rejectedCount }}</div>
-            <div class="stat-label">已拒绝</div>
+        <el-col :xs="12" :sm="8" :lg="4">
+          <div class="stat-card limit">
+            <div class="stat-icon">
+              <i class="el-icon-money"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">${{ statistics.totalDailyLimit }}</div>
+              <div class="stat-label">总日限额</div>
+            </div>
           </div>
         </el-col>
       </el-row>
@@ -135,21 +145,23 @@
     
     <!-- 操作按钮区域 -->
     <div class="action-section">
-      <el-button type="primary" plain @click="handleBatchApprove" :disabled="!selectedRows.length">
-        批量审核通过
+      <el-button type="primary" plain @click="handleBatchEnable" :disabled="!selectedRows.length">
+        <i class="el-icon-check"></i> 批量启用
       </el-button>
-      <el-button type="danger" plain @click="handleBatchReject" :disabled="!selectedRows.length">
-        批量拒绝
+      <el-button type="warning" plain @click="handleBatchDisable" :disabled="!selectedRows.length">
+        <i class="el-icon-close"></i> 批量禁用
       </el-button>
-      <el-button @click="handleRefresh">刷新</el-button>
+      <el-button @click="handleRefresh">
+        <i class="el-icon-refresh"></i> 刷新
+      </el-button>
       <span style="margin-left: 10px; color: #909399;">
-        已选择 {{ selectedRows.length }} 条记录
+        已选择 {{ selectedRows.length }} 个账户
       </span>
     </div>
     
     <!-- 数据表格 -->
     <el-table 
-      :data="txianList" 
+      :data="accountList" 
       border 
       style="margin-top: 15px"
       @selection-change="handleSelectionChange"
@@ -159,108 +171,122 @@
       <!-- 选择列 -->
       <el-table-column type="selection" width="55" align="center"></el-table-column>
       
-      <!-- 用户信息 -->
-      <el-table-column label="用户信息" width="120">
+      <!-- 支付方式 -->
+      <el-table-column label="支付方式" width="120">
         <template slot-scope="scope">
-          <div class="user-info">
-            <div class="username">{{ scope.row.userName }}</div>
-            <div class="user-id">ID: {{ scope.row.uId }}</div>
-            <div class="user-phone" v-if="scope.row.userPhone">{{ scope.row.userPhone }}</div>
+          <div class="payment-method">
+            <el-tag :type="getMethodColor(scope.row.methodCode)" size="medium">
+              <i :class="getMethodIcon(scope.row.methodCode)"></i>
+              {{ getMethodName(scope.row.methodCode) }}
+            </el-tag>
           </div>
         </template>
       </el-table-column>
       
-      <!-- 提现金额 -->
-      <el-table-column label="提现金额" prop="money" width="120">
+      <!-- 账户信息 -->
+      <el-table-column label="账户信息" min-width="200">
         <template slot-scope="scope">
-          <div class="amount-info">
-            <div class="main-amount">${{ scope.row.money }}</div>
-          </div>
-        </template>
-      </el-table-column>
-      
-      <!-- 手续费 -->
-      <el-table-column label="手续费" prop="moneyFee" width="100">
-        <template slot-scope="scope">
-          <span class="fee-amount">-${{ scope.row.moneyFee }}</span>
-        </template>
-      </el-table-column>
-      
-      <!-- 实际到账 -->
-      <el-table-column label="实际到账" prop="momeyActual" width="120">
-        <template slot-scope="scope">
-          <span class="actual-amount">${{ scope.row.momeyActual }}</span>
-        </template>
-      </el-table-column>
-      
-      <!-- 收款信息 -->
-      <el-table-column label="收款信息" width="200">
-        <template slot-scope="scope">
-          <div class="payment-info">
-            <div class="pay-type">
-              <el-tag size="mini" :type="getPayTypeColor(scope.row.payType)">
-                {{ getPayTypeName(scope.row.payType) }}
-              </el-tag>
+          <div class="account-info">
+            <div class="account-name">{{ scope.row.accountName }}</div>
+            <div class="account-detail" v-if="scope.row.methodCode === 'aba'">
+              <span class="label">账号:</span> {{ scope.row.accountNumber }}
             </div>
-            <div class="account-info">
-              <span>{{ scope.row.uBankName }}</span><br>
-              <span class="account-number">{{ scope.row.uBackCard }}</span>
+            <div class="account-detail" v-else-if="scope.row.methodCode === 'huiwang'">
+              <span class="label">汇旺号:</span> {{ scope.row.accountNumber }}
+            </div>
+            <div class="account-detail" v-else-if="scope.row.methodCode === 'usdt'">
+              <span class="label">地址:</span> 
+              <span class="wallet-address">{{ formatWalletAddress(scope.row.walletAddress) }}</span>
+              <el-button type="text" size="mini" @click="copyToClipboard(scope.row.walletAddress)">
+                <i class="el-icon-copy-document"></i>
+              </el-button>
             </div>
           </div>
         </template>
       </el-table-column>
       
-      <!-- 申请时间 -->
-      <el-table-column label="申请时间" prop="createTime" width="160">
+      <!-- 银行/网络信息 -->
+      <el-table-column label="银行/网络" width="160">
         <template slot-scope="scope">
-          {{ formatDateTime(scope.row.createTime) }}
+          <div v-if="scope.row.methodCode === 'aba'">
+            <div class="bank-name">{{ scope.row.bankName }}</div>
+          </div>
+          <div v-else-if="scope.row.methodCode === 'usdt'">
+            <el-tag size="mini" type="success">{{ scope.row.networkType }}</el-tag>
+          </div>
+          <div v-else>-</div>
+        </template>
+      </el-table-column>
+      
+      <!-- 联系方式 -->
+      <el-table-column label="联系方式" width="130">
+        <template slot-scope="scope">
+          <span v-if="scope.row.phoneNumber">{{ scope.row.phoneNumber }}</span>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+      
+      <!-- 限额设置 -->
+      <el-table-column label="日限额" width="120">
+        <template slot-scope="scope">
+          <div class="limit-info">
+            <span class="limit-amount">${{ formatNumber(scope.row.dailyLimit) }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      
+      <!-- 使用统计 -->
+      <el-table-column label="使用统计" width="140">
+        <template slot-scope="scope">
+          <div class="usage-info">
+            <div class="usage-count">使用 {{ scope.row.usageCount }} 次</div>
+            <div class="last-used" v-if="scope.row.lastUsedAt">
+              {{ formatLastUsed(scope.row.lastUsedAt) }}
+            </div>
+            <div class="last-used" v-else>从未使用</div>
+          </div>
         </template>
       </el-table-column>
       
       <!-- 状态 -->
-      <el-table-column label="状态" prop="status" width="100">
+      <el-table-column label="状态" width="100">
         <template slot-scope="scope">
-          <el-tag size="mini" :type="getStatusType(scope.row.status)">
-            {{ getStatusText(scope.row.status) }}
-          </el-tag>
+          <el-switch
+            v-model="scope.row.isActive"
+            :active-value="1"
+            :inactive-value="0"
+            active-text="启用"
+            inactive-text="禁用"
+            @change="handleStatusChange(scope.row)">
+          </el-switch>
         </template>
       </el-table-column>
       
-      <!-- 审核时间 -->
-      <el-table-column label="审核时间" prop="successTime" width="160">
+      <!-- 创建时间 -->
+      <el-table-column label="创建时间" prop="createdAt" width="160">
         <template slot-scope="scope">
-          {{ scope.row.successTime ? formatDateTime(scope.row.successTime) : '-' }}
-        </template>
-      </el-table-column>
-      
-      <!-- 审核员 -->
-      <el-table-column label="审核员" prop="adminName" width="100">
-        <template slot-scope="scope">
-          {{ scope.row.adminName || '-' }}
+          {{ formatDateTime(scope.row.createdAt) }}
         </template>
       </el-table-column>
       
       <!-- 操作列 -->
-      <el-table-column fixed="right" label="操作" width="180">
+      <el-table-column fixed="right" label="操作" width="200">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-view" @click="showDetail(scope.row)">
             详情
           </el-button>
-          <el-button 
-            v-if="scope.row.status === 0" 
-            type="text" 
-            icon="el-icon-check" 
-            style="color: #67C23A"
-            @click="showApproveDialog(scope.row)">
-            审核
+          <el-button type="text" icon="el-icon-edit" @click="showEditDialog(scope.row)">
+            编辑
           </el-button>
           <el-button 
-            v-if="scope.row.status === 0" 
+            v-if="scope.row.methodCode === 'usdt' && scope.row.qrCodeUrl"
             type="text" 
-            icon="el-icon-close" 
-            style="color: #F56C6C"
-            @click="showRejectDialog(scope.row)">
-            拒绝
+            icon="el-icon-picture" 
+            @click="showQRCode(scope.row)">
+            二维码
+          </el-button>
+          <el-button type="text" icon="el-icon-delete" style="color: #F56C6C" @click="handleDelete(scope.row)">
+            删除
           </el-button>
         </template>
       </el-table-column>
@@ -280,552 +306,695 @@
       </el-pagination>
     </template>
 
-    <!-- 审核对话框 -->
-    <el-dialog title="审核提现申请" width="600px" :visible.sync="approveDialog.visible">
-      <div class="approve-content">
-        <el-descriptions title="提现详情" :column="2" border>
-          <el-descriptions-item label="用户名">{{ approveDialog.data.userName }}</el-descriptions-item>
-          <el-descriptions-item label="提现金额">${{ approveDialog.data.money }}</el-descriptions-item>
-          <el-descriptions-item label="手续费">${{ approveDialog.data.moneyFee }}</el-descriptions-item>
-          <el-descriptions-item label="实际到账">${{ approveDialog.data.momeyActual }}</el-descriptions-item>
-          <el-descriptions-item label="支付方式">{{ getPayTypeName(approveDialog.data.payType) }}</el-descriptions-item>
-          <el-descriptions-item label="收款账号">{{ approveDialog.data.uBackCard }}</el-descriptions-item>
-          <el-descriptions-item label="收款人">{{ approveDialog.data.uBackUserName }}</el-descriptions-item>
-          <el-descriptions-item label="申请时间">{{ formatDateTime(approveDialog.data.createTime) }}</el-descriptions-item>
-        </el-descriptions>
-        
-        <div style="margin-top: 20px;">
-          <el-form label-width="80px">
-            <el-form-item label="审核意见：">
-              <el-input 
-                v-model="approveDialog.remark" 
-                type="textarea" 
-                rows="3" 
-                placeholder="请输入审核意见（可选）">
-              </el-input>
-            </el-form-item>
-            <el-form-item label="操作密码：">
-              <el-input 
-                v-model="approveDialog.password" 
-                type="password" 
-                placeholder="请输入操作密码（可选）">
-              </el-input>
-            </el-form-item>
-          </el-form>
-        </div>
-      </div>
+    <!-- 添加/编辑账户对话框 -->
+    <el-dialog 
+      :title="editDialog.isEdit ? '编辑账户' : '添加账户'" 
+      width="600px" 
+      :visible.sync="editDialog.visible"
+      @close="resetEditForm">
       
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="approveDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="handleApprove" :loading="approveDialog.loading">确认通过</el-button>
-      </span>
-    </el-dialog>
-
-    <!-- 拒绝对话框 -->
-    <el-dialog title="拒绝提现申请" width="500px" :visible.sync="rejectDialog.visible">
-      <el-form label-width="80px">
-        <el-form-item label="拒绝原因：" required>
-          <el-input 
-            v-model="rejectDialog.reason" 
-            type="textarea" 
-            rows="4" 
-            placeholder="请输入拒绝原因">
-          </el-input>
+      <el-form :model="editForm" :rules="editRules" ref="editForm" label-width="120px">
+        <!-- 支付方式选择 -->
+        <el-form-item label="支付方式" prop="methodCode">
+          <el-select 
+            v-model="editForm.methodCode" 
+            placeholder="请选择支付方式" 
+            style="width: 100%"
+            :disabled="editDialog.isEdit"
+            @change="handleMethodChange">
+            <el-option label="ABA银行" value="aba">
+              <i class="el-icon-bank-card" style="color: #409EFF; margin-right: 8px;"></i>
+              ABA银行
+            </el-option>
+            <el-option label="汇旺支付" value="huiwang">
+              <i class="el-icon-mobile" style="color: #E6A23C; margin-right: 8px;"></i>
+              汇旺支付
+            </el-option>
+            <el-option label="USDT钱包" value="usdt">
+              <i class="el-icon-coin" style="color: #67C23A; margin-right: 8px;"></i>
+              USDT钱包
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="操作密码：">
+
+        <!-- 通用字段 -->
+        <el-form-item label="账户名称" prop="accountName">
+          <el-input v-model="editForm.accountName" placeholder="请输入账户名称"></el-input>
+        </el-form-item>
+
+        <!-- ABA银行专用字段 -->
+        <template v-if="editForm.methodCode === 'aba'">
+          <el-form-item label="银行名称" prop="bankName">
+            <el-input v-model="editForm.bankName" placeholder="请输入银行名称"></el-input>
+          </el-form-item>
+          <el-form-item label="账户号码" prop="accountNumber">
+            <el-input v-model="editForm.accountNumber" placeholder="请输入银行账户号码"></el-input>
+          </el-form-item>
+        </template>
+
+        <!-- 汇旺专用字段 -->
+        <template v-if="editForm.methodCode === 'huiwang'">
+          <el-form-item label="汇旺账号" prop="accountNumber">
+            <el-input v-model="editForm.accountNumber" placeholder="请输入汇旺账号"></el-input>
+          </el-form-item>
+          <el-form-item label="手机号码" prop="phoneNumber">
+            <el-input v-model="editForm.phoneNumber" placeholder="请输入手机号码"></el-input>
+          </el-form-item>
+        </template>
+
+        <!-- USDT专用字段 -->
+        <template v-if="editForm.methodCode === 'usdt'">
+          <el-form-item label="钱包地址" prop="walletAddress">
+            <el-input v-model="editForm.walletAddress" placeholder="请输入USDT钱包地址"></el-input>
+          </el-form-item>
+          <el-form-item label="网络类型" prop="networkType">
+            <el-select v-model="editForm.networkType" placeholder="请选择网络类型" style="width: 100%">
+              <el-option label="TRC20 (TRON)" value="TRC20"></el-option>
+              <el-option label="ERC20 (Ethereum)" value="ERC20"></el-option>
+              <el-option label="BSC (Binance Smart Chain)" value="BSC"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="二维码上传">
+            <el-upload
+              class="qr-uploader"
+              action="/api/upload/qrcode"
+              :show-file-list="false"
+              :on-success="handleQRSuccess"
+              :before-upload="beforeQRUpload">
+              <img v-if="editForm.qrCodeUrl" :src="editForm.qrCodeUrl" class="qr-image">
+              <i v-else class="el-icon-plus qr-uploader-icon"></i>
+            </el-upload>
+          </el-form-item>
+        </template>
+
+        <!-- 通用设置 -->
+        <el-form-item label="日限额" prop="dailyLimit">
+          <el-input-number 
+            v-model="editForm.dailyLimit" 
+            :min="0" 
+            :max="1000000"
+            :precision="2"
+            placeholder="请输入日限额"
+            style="width: 100%">
+          </el-input-number>
+        </el-form-item>
+
+        <el-form-item label="账户状态">
+          <el-switch
+            v-model="editForm.isActive"
+            :active-value="1"
+            :inactive-value="0"
+            active-text="启用"
+            inactive-text="禁用">
+          </el-switch>
+        </el-form-item>
+
+        <el-form-item label="备注信息">
           <el-input 
-            v-model="rejectDialog.password" 
-            type="password" 
-            placeholder="请输入操作密码（可选）">
+            v-model="editForm.remark" 
+            type="textarea" 
+            rows="3" 
+            placeholder="请输入备注信息">
           </el-input>
         </el-form-item>
       </el-form>
       
       <span slot="footer" class="dialog-footer">
-        <el-button @click="rejectDialog.visible = false">取消</el-button>
-        <el-button type="danger" @click="handleReject" :loading="rejectDialog.loading">确认拒绝</el-button>
+        <el-button @click="editDialog.visible = false">取消</el-button>
+        <el-button type="primary" @click="handleSave" :loading="editDialog.loading">
+          {{ editDialog.isEdit ? '保存' : '添加' }}
+        </el-button>
       </span>
     </el-dialog>
 
-    <!-- 详情对话框 -->
-    <el-dialog title="提现详情" width="700px" :visible.sync="detailDialog.visible">
+    <!-- 账户详情对话框 -->
+    <el-dialog title="账户详情" width="700px" :visible.sync="detailDialog.visible">
       <el-descriptions :column="2" border v-if="detailDialog.data">
-        <el-descriptions-item label="用户ID">{{ detailDialog.data.uId }}</el-descriptions-item>
-        <el-descriptions-item label="用户名">{{ detailDialog.data.userName }}</el-descriptions-item>
-        <el-descriptions-item label="提现金额">${{ detailDialog.data.money }}</el-descriptions-item>
-        <el-descriptions-item label="账户余额">${{ detailDialog.data.moneyBalance }}</el-descriptions-item>
-        <el-descriptions-item label="手续费">${{ detailDialog.data.moneyFee }}</el-descriptions-item>
-        <el-descriptions-item label="实际到账">${{ detailDialog.data.momeyActual }}</el-descriptions-item>
-        <el-descriptions-item label="支付方式">{{ getPayTypeName(detailDialog.data.payType) }}</el-descriptions-item>
-        <el-descriptions-item label="收款银行">{{ detailDialog.data.uBankName }}</el-descriptions-item>
-        <el-descriptions-item label="收款账号">{{ detailDialog.data.uBackCard }}</el-descriptions-item>
-        <el-descriptions-item label="收款人">{{ detailDialog.data.uBackUserName }}</el-descriptions-item>
-        <el-descriptions-item label="用户IP">{{ detailDialog.data.uIp }}</el-descriptions-item>
-        <el-descriptions-item label="用户地区">{{ detailDialog.data.uCity || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="申请时间">{{ formatDateTime(detailDialog.data.createTime) }}</el-descriptions-item>
-        <el-descriptions-item label="审核时间">{{ detailDialog.data.successTime ? formatDateTime(detailDialog.data.successTime) : '-' }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag :type="getStatusType(detailDialog.data.status)">
-            {{ getStatusText(detailDialog.data.status) }}
+        <el-descriptions-item label="支付方式">
+          <el-tag :type="getMethodColor(detailDialog.data.methodCode)">
+            <i :class="getMethodIcon(detailDialog.data.methodCode)"></i>
+            {{ getMethodName(detailDialog.data.methodCode) }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="备注">{{ detailDialog.data.msg || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="账户名称">{{ detailDialog.data.accountName }}</el-descriptions-item>
+        
+        <el-descriptions-item label="账户号码" v-if="detailDialog.data.accountNumber">
+          {{ detailDialog.data.accountNumber }}
+        </el-descriptions-item>
+        <el-descriptions-item label="银行名称" v-if="detailDialog.data.bankName">
+          {{ detailDialog.data.bankName }}
+        </el-descriptions-item>
+        <el-descriptions-item label="手机号码" v-if="detailDialog.data.phoneNumber">
+          {{ detailDialog.data.phoneNumber }}
+        </el-descriptions-item>
+        <el-descriptions-item label="钱包地址" v-if="detailDialog.data.walletAddress" span="2">
+          <span class="wallet-address-full">{{ detailDialog.data.walletAddress }}</span>
+          <el-button type="text" size="mini" @click="copyToClipboard(detailDialog.data.walletAddress)">
+            <i class="el-icon-copy-document"></i> 复制
+          </el-button>
+        </el-descriptions-item>
+        <el-descriptions-item label="网络类型" v-if="detailDialog.data.networkType">
+          <el-tag size="small" type="success">{{ detailDialog.data.networkType }}</el-tag>
+        </el-descriptions-item>
+        
+        <el-descriptions-item label="日限额">${{ formatNumber(detailDialog.data.dailyLimit) }}</el-descriptions-item>
+        <el-descriptions-item label="余额限制">
+          {{ detailDialog.data.balanceLimit ? '$' + formatNumber(detailDialog.data.balanceLimit) : '无限制' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="使用次数">{{ detailDialog.data.usageCount }} 次</el-descriptions-item>
+        <el-descriptions-item label="最后使用">
+          {{ detailDialog.data.lastUsedAt ? formatDateTime(detailDialog.data.lastUsedAt) : '从未使用' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="账户状态">
+          <el-tag :type="detailDialog.data.isActive ? 'success' : 'danger'">
+            {{ detailDialog.data.isActive ? '启用' : '禁用' }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ formatDateTime(detailDialog.data.createdAt) }}</el-descriptions-item>
+        <el-descriptions-item label="更新时间">{{ formatDateTime(detailDialog.data.updatedAt) }}</el-descriptions-item>
+        <el-descriptions-item label="备注信息" span="2">{{ detailDialog.data.remark || '无' }}</el-descriptions-item>
       </el-descriptions>
+    </el-dialog>
+
+    <!-- 二维码预览对话框 -->
+    <el-dialog title="二维码预览" width="400px" :visible.sync="qrDialog.visible">
+      <div class="qr-preview" v-if="qrDialog.imageUrl">
+        <img :src="qrDialog.imageUrl" alt="二维码" class="qr-preview-image">
+        <div class="qr-info">
+          <p><strong>钱包地址:</strong></p>
+          <p class="wallet-address-full">{{ qrDialog.walletAddress }}</p>
+          <el-button type="primary" size="small" @click="copyToClipboard(qrDialog.walletAddress)">
+            <i class="el-icon-copy-document"></i> 复制地址
+          </el-button>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import {
-  getUserPayCashListApi,
-  getUserPayCashDetailApi,
-  getUserPayCashApproveApi,
-  getUserPayCashBatchApproveApi,
-  getUserPayCashStatisticsApi,
-  getUserPayCashExportApi,
-  getPaymentMethodsApi,
-  getAdminUsersApi,
-  getUserPayCashPassApi,
-  getUserPayCashRejectApi,
-  getUserPayCashBatchPassApi,
-  getUserPayCashBatchRejectApi
-} from '@/api/UserPayCashApi'
+// 注意：这里应该导入相应的API，目前使用模拟数据
+// import { getDepositAccountsApi, addDepositAccountApi, updateDepositAccountApi, deleteDepositAccountApi } from '@/api/DepositAccountApi'
 
 export default {
-  name: 'UserTxianList',
+  name: 'DepositAccountManagement',
   data() {
     return {
       loading: false,
       currentPage: 1,
       pageSize: 10,
       totalCount: 0,
+      
+      // 搜索表单
       searchForm: {
-        username: '',
-        userId: '',
-        phone: '',
-        status: '',
-        payType: '',
-        dateRange: [],
-        minAmount: null,
-        maxAmount: null,
-        adminName: ''
+        methodCode: '',
+        isActive: '',
+        accountName: '',
+        dateRange: []
       },
+      
+      // 选中的行
       selectedRows: [],
-      txianList: [],
-      statistics: null,
-      paymentMethods: [],
-      adminUsers: [],
-      approveDialog: {
+      
+      // 账户列表
+      accountList: [],
+      
+      // 统计数据
+      statistics: {
+        totalCount: 0,
+        abaCount: 0,
+        huiwangCount: 0,
+        usdtCount: 0,
+        activeCount: 0,
+        totalDailyLimit: '0.00'
+      },
+      
+      // 编辑对话框
+      editDialog: {
         visible: false,
         loading: false,
-        data: {},
-        remark: '',
-        password: ''
+        isEdit: false
       },
-      rejectDialog: {
-        visible: false,
-        loading: false,
-        data: {},
-        reason: '',
-        password: ''
+      
+      // 编辑表单
+      editForm: {
+        id: null,
+        methodCode: '',
+        accountName: '',
+        accountNumber: '',
+        bankName: '',
+        phoneNumber: '',
+        walletAddress: '',
+        networkType: '',
+        qrCodeUrl: '',
+        isActive: 1,
+        dailyLimit: null,
+        balanceLimit: null,
+        remark: ''
       },
+      
+      // 表单验证规则
+      editRules: {
+        methodCode: [
+          { required: true, message: '请选择支付方式', trigger: 'change' }
+        ],
+        accountName: [
+          { required: true, message: '请输入账户名称', trigger: 'blur' }
+        ],
+        accountNumber: [
+          { required: true, message: '请输入账户号码', trigger: 'blur' }
+        ],
+        bankName: [
+          { required: true, message: '请输入银行名称', trigger: 'blur' }
+        ],
+        phoneNumber: [
+          { required: true, message: '请输入手机号码', trigger: 'blur' }
+        ],
+        walletAddress: [
+          { required: true, message: '请输入钱包地址', trigger: 'blur' }
+        ],
+        networkType: [
+          { required: true, message: '请选择网络类型', trigger: 'change' }
+        ],
+        dailyLimit: [
+          { required: true, message: '请输入日限额', trigger: 'blur' }
+        ]
+      },
+      
+      // 详情对话框
       detailDialog: {
         visible: false,
         data: {}
+      },
+      
+      // 二维码对话框
+      qrDialog: {
+        visible: false,
+        imageUrl: '',
+        walletAddress: ''
       }
     };
   },
+  
   mounted() {
     this.loadData();
-    this.loadPaymentMethods();
-    this.loadAdminUsers();
     this.loadStatistics();
   },
+  
   methods: {
-    // 加载列表数据
+    // 加载数据
     async loadData() {
       this.loading = true;
       try {
-        const params = this.buildQueryParams();
-        const res = await getUserPayCashListApi(params);
-        
-        if (res.code === 1) {
-          this.txianList = res.data.data || [];
-          this.totalCount = parseInt(res.data.total) || 0;
-          this.currentPage = parseInt(res.data.current_page) || 1;
-          this.pageSize = parseInt(res.data.per_page) || 10;
-          
-          // 如果返回了统计数据，也更新统计信息
-          if (res.data.statistics) {
-            this.statistics = res.data.statistics;
-          }
-        } else {
-          this.$message.error(res.message || '获取数据失败');
-        }
+        // 模拟API调用
+        const mockData = this.getMockData();
+        this.accountList = mockData.list;
+        this.totalCount = mockData.total;
+        this.currentPage = mockData.currentPage;
+        this.pageSize = mockData.pageSize;
       } catch (error) {
         console.error('加载数据失败:', error);
-        this.$message.error('网络错误，请稍后重试');
+        this.$message.error('加载数据失败，请稍后重试');
       } finally {
         this.loading = false;
       }
     },
-
+    
     // 加载统计数据
     async loadStatistics() {
       try {
-        const params = this.buildStatisticsParams();
-        const res = await getUserPayCashStatisticsApi(params);
-        
-        if (res.code === 1) {
-          this.statistics = res.data;
-        }
+        // 模拟统计数据
+        this.statistics = {
+          totalCount: this.accountList.length || 8,
+          abaCount: 2,
+          huiwangCount: 3,
+          usdtCount: 3,
+          activeCount: 7,
+          totalDailyLimit: '405000.00'
+        };
       } catch (error) {
         console.error('加载统计数据失败:', error);
       }
     },
-
-    // 加载支付方式
-    async loadPaymentMethods() {
-      try {
-        const res = await getPaymentMethodsApi();
-        if (res.code === 1) {
-          this.paymentMethods = res.data || [];
-        }
-      } catch (error) {
-        console.error('加载支付方式失败:', error);
-      }
-    },
-
-    // 加载管理员列表
-    async loadAdminUsers() {
-      try {
-        const res = await getAdminUsersApi();
-        if (res.code === 1) {
-          this.adminUsers = res.data || [];
-        }
-      } catch (error) {
-        console.error('加载管理员列表失败:', error);
-      }
-    },
-
-    // 构建查询参数
-    buildQueryParams() {
-      const params = {
-        page: parseInt(this.currentPage),
-        limit: parseInt(this.pageSize)
+    
+    // 获取模拟数据
+    getMockData() {
+      return {
+        list: [
+          {
+            id: 1,
+            methodCode: 'aba',
+            accountName: 'GOLDEN HORSE CASINO PTE LTD',
+            accountNumber: '001234567890123',
+            bankName: '柬埔寨亚洲银行 (ABA BANK)',
+            phoneNumber: null,
+            walletAddress: null,
+            networkType: null,
+            qrCodeUrl: null,
+            isActive: 1,
+            dailyLimit: 50000.00,
+            balanceLimit: null,
+            usageCount: 156,
+            lastUsedAt: '2025-05-31 14:23:45',
+            remark: 'ABA银行主要收款账户，工作日1-3小时到账',
+            createdAt: '2025-05-30 12:38:41',
+            updatedAt: '2025-05-31 14:23:45'
+          },
+          {
+            id: 2,
+            methodCode: 'aba',
+            accountName: 'GOLDEN HORSE ENTERTAINMENT',
+            accountNumber: '001234567890456',
+            bankName: '柬埔寨亚洲银行 (ABA BANK)',
+            phoneNumber: null,
+            walletAddress: null,
+            networkType: null,
+            qrCodeUrl: null,
+            isActive: 1,
+            dailyLimit: 30000.00,
+            balanceLimit: null,
+            usageCount: 89,
+            lastUsedAt: '2025-05-31 11:15:32',
+            remark: 'ABA银行备用收款账户',
+            createdAt: '2025-05-30 12:38:41',
+            updatedAt: '2025-05-31 11:15:32'
+          },
+          {
+            id: 3,
+            methodCode: 'huiwang',
+            accountName: 'GOLDEN HORSE',
+            accountNumber: 'HW88888888',
+            bankName: null,
+            phoneNumber: '+855 12 345 678',
+            walletAddress: null,
+            networkType: null,
+            qrCodeUrl: null,
+            isActive: 1,
+            dailyLimit: 20000.00,
+            balanceLimit: null,
+            usageCount: 234,
+            lastUsedAt: '2025-05-31 15:42:18',
+            remark: '汇旺主要收款账户，快速到账',
+            createdAt: '2025-05-30 12:38:41',
+            updatedAt: '2025-05-31 15:42:18'
+          },
+          {
+            id: 6,
+            methodCode: 'usdt',
+            accountName: 'GOLDEN HORSE MAIN WALLET',
+            accountNumber: null,
+            bankName: null,
+            phoneNumber: null,
+            walletAddress: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE',
+            networkType: 'TRC20',
+            qrCodeUrl: '/static/img/qr/usdt_trc20_main.png',
+            isActive: 1,
+            dailyLimit: 100000.00,
+            balanceLimit: null,
+            usageCount: 445,
+            lastUsedAt: '2025-05-31 16:08:22',
+            remark: 'USDT-TRC20主钱包，确认后即时到账',
+            createdAt: '2025-05-30 12:38:41',
+            updatedAt: '2025-05-31 16:08:22'
+          }
+        ],
+        total: 8,
+        currentPage: 1,
+        pageSize: 10
       };
-
-      // 添加搜索条件
-      if (this.searchForm.username) params.username = this.searchForm.username;
-      if (this.searchForm.userId) params.userId = parseInt(this.searchForm.userId);
-      if (this.searchForm.phone) params.phone = this.searchForm.phone;
-      if (this.searchForm.status !== '') params.status = parseInt(this.searchForm.status);
-      if (this.searchForm.payType) params.payType = this.searchForm.payType;
-      if (this.searchForm.adminName) params.adminName = this.searchForm.adminName;
-      if (this.searchForm.minAmount) params.minAmount = parseFloat(this.searchForm.minAmount);
-      if (this.searchForm.maxAmount) params.maxAmount = parseFloat(this.searchForm.maxAmount);
-
-      // 处理时间范围
-      if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
-        params.start = this.searchForm.dateRange[0];
-        params.end = this.searchForm.dateRange[1];
-      }
-
-      return params;
     },
-
-    // 构建统计参数
-    buildStatisticsParams() {
-      const params = {};
-      
-      if (this.searchForm.status !== '') params.status = parseInt(this.searchForm.status);
-      if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
-        params.start = this.searchForm.dateRange[0];
-        params.end = this.searchForm.dateRange[1];
-      }
-
-      return params;
-    },
-
-    // 分页处理
-    handleCurrentChange(page) {
-      this.currentPage = parseInt(page);
-      this.loadData();
-    },
-
-    handleSizeChange(size) {
-      this.pageSize = parseInt(size);
-      this.currentPage = 1;
-      this.loadData();
-    },
-
+    
     // 搜索
     handleSearch() {
       this.currentPage = 1;
       this.loadData();
-      this.loadStatistics();
     },
-
+    
     // 重置
     handleReset() {
       this.searchForm = {
-        username: '',
-        userId: '',
-        phone: '',
-        status: '',
-        payType: '',
-        dateRange: [],
-        minAmount: null,
-        maxAmount: null,
-        adminName: ''
+        methodCode: '',
+        isActive: '',
+        accountName: '',
+        dateRange: []
       };
       this.currentPage = 1;
       this.loadData();
-      this.loadStatistics();
     },
-
+    
     // 导出
-    async handleExport() {
-      try {
-        const params = this.buildQueryParams();
-        delete params.page;
-        delete params.limit;
-        
-        const res = await getUserPayCashExportApi(params);
-        if (res.code === 1) {
-          this.$message.success('导出成功');
-          // 这里可以处理下载逻辑
-          if (res.data.downloadUrl) {
-            window.open(res.data.downloadUrl);
-          }
-        } else {
-          this.$message.error(res.message || '导出失败');
-        }
-      } catch (error) {
-        console.error('导出失败:', error);
-        this.$message.error('导出失败，请稍后重试');
-      }
+    handleExport() {
+      this.$message.success('导出功能开发中...');
     },
-
+    
     // 刷新
     handleRefresh() {
       this.loadData();
       this.loadStatistics();
     },
-
+    
+    // 分页
+    handleCurrentChange(page) {
+      this.currentPage = page;
+      this.loadData();
+    },
+    
+    handleSizeChange(size) {
+      this.pageSize = size;
+      this.currentPage = 1;
+      this.loadData();
+    },
+    
     // 选择变化
     handleSelectionChange(selection) {
       this.selectedRows = selection;
     },
-
-    // 批量审核通过
-    handleBatchApprove() {
-      if (this.selectedRows.length === 0) {
-        this.$message.warning('请选择要审核的记录');
-        return;
-      }
-
-      const pendingRows = this.selectedRows.filter(row => row.status === 0);
-      if (pendingRows.length === 0) {
-        this.$message.warning('所选记录中没有待审核的申请');
-        return;
-      }
-
-      this.$confirm(`确定要批量通过 ${pendingRows.length} 条提现申请吗？`, '确认操作', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+    
+    // 批量启用
+    handleBatchEnable() {
+      if (this.selectedRows.length === 0) return;
+      this.$confirm(`确定要启用选中的 ${this.selectedRows.length} 个账户吗？`, '确认操作', {
         type: 'warning'
-      }).then(async () => {
-        try {
-          const ids = pendingRows.map(row => row.id);
-          const res = await getUserPayCashBatchPassApi({ ids });
-          
-          if (res.code === 1) {
-            this.$message.success(res.message || '批量审核通过成功');
-            this.selectedRows = [];
-            this.loadData();
-            this.loadStatistics();
-          } else {
-            this.$message.error(res.message || '批量审核失败');
-          }
-        } catch (error) {
-          console.error('批量审核失败:', error);
-          this.$message.error('操作失败，请稍后重试');
-        }
+      }).then(() => {
+        // TODO: 调用批量启用API
+        this.$message.success('批量启用成功');
+        this.loadData();
       });
     },
-
-    // 批量拒绝
-    handleBatchReject() {
-      if (this.selectedRows.length === 0) {
-        this.$message.warning('请选择要拒绝的记录');
-        return;
-      }
-
-      const pendingRows = this.selectedRows.filter(row => row.status === 0);
-      if (pendingRows.length === 0) {
-        this.$message.warning('所选记录中没有待审核的申请');
-        return;
-      }
-
-      this.$prompt('请输入拒绝原因', '批量拒绝', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputType: 'textarea',
-        inputValidator: (value) => {
-          if (!value || !value.trim()) {
-            return '请输入拒绝原因';
-          }
-          return true;
-        }
-      }).then(async ({ value }) => {
-        try {
-          const ids = pendingRows.map(row => row.id);
-          const res = await getUserPayCashBatchRejectApi({ 
-            ids, 
-            reason: value 
-          });
-          
-          if (res.code === 1) {
-            this.$message.success(res.message || '批量拒绝成功');
-            this.selectedRows = [];
-            this.loadData();
-            this.loadStatistics();
-          } else {
-            this.$message.error(res.message || '批量拒绝失败');
-          }
-        } catch (error) {
-          console.error('批量拒绝失败:', error);
-          this.$message.error('操作失败，请稍后重试');
-        }
+    
+    // 批量禁用
+    handleBatchDisable() {
+      if (this.selectedRows.length === 0) return;
+      this.$confirm(`确定要禁用选中的 ${this.selectedRows.length} 个账户吗？`, '确认操作', {
+        type: 'warning'
+      }).then(() => {
+        // TODO: 调用批量禁用API
+        this.$message.success('批量禁用成功');
+        this.loadData();
       });
     },
-
-    // 显示审核对话框
-    showApproveDialog(row) {
-      this.approveDialog.data = { ...row };
-      this.approveDialog.remark = '';
-      this.approveDialog.password = '';
-      this.approveDialog.visible = true;
+    
+    // 状态切换
+    handleStatusChange(row) {
+      const status = row.isActive ? '启用' : '禁用';
+      this.$confirm(`确定要${status}此账户吗？`, '确认操作', {
+        type: 'warning'
+      }).then(() => {
+        // TODO: 调用状态更新API
+        this.$message.success(`${status}成功`);
+        this.loadData();
+      }).catch(() => {
+        // 恢复原状态
+        row.isActive = row.isActive ? 0 : 1;
+      });
     },
-
-    // 显示拒绝对话框
-    showRejectDialog(row) {
-      this.rejectDialog.data = { ...row };
-      this.rejectDialog.reason = '';
-      this.rejectDialog.password = '';
-      this.rejectDialog.visible = true;
+    
+    // 显示添加对话框
+    showAddDialog() {
+      this.editDialog.isEdit = false;
+      this.editDialog.visible = true;
+      this.resetEditForm();
     },
-
+    
+    // 显示编辑对话框
+    showEditDialog(row) {
+      this.editDialog.isEdit = true;
+      this.editDialog.visible = true;
+      this.editForm = { ...row };
+    },
+    
     // 显示详情
-    async showDetail(row) {
-      try {
-        const res = await getUserPayCashDetailApi({ id: row.id });
-        if (res.code === 1) {
-          this.detailDialog.data = res.data;
-          this.detailDialog.visible = true;
-        } else {
-          this.$message.error(res.message || '获取详情失败');
-        }
-      } catch (error) {
-        console.error('获取详情失败:', error);
-        this.$message.error('获取详情失败，请稍后重试');
-      }
+    showDetail(row) {
+      this.detailDialog.data = { ...row };
+      this.detailDialog.visible = true;
     },
-
-    // 审核通过
-    async handleApprove() {
-      this.approveDialog.loading = true;
-      try {
-        const res = await getUserPayCashPassApi({
-          id: this.approveDialog.data.id,
-          remark: this.approveDialog.remark,
-          password: this.approveDialog.password
-        });
-
-        if (res.code === 1) {
-          this.$message.success(res.message || '审核通过成功');
-          this.approveDialog.visible = false;
+    
+    // 显示二维码
+    showQRCode(row) {
+      this.qrDialog.imageUrl = row.qrCodeUrl;
+      this.qrDialog.walletAddress = row.walletAddress;
+      this.qrDialog.visible = true;
+    },
+    
+    // 删除账户
+    handleDelete(row) {
+      this.$confirm(`确定要删除账户"${row.accountName}"吗？此操作不可恢复！`, '确认删除', {
+        type: 'error'
+      }).then(() => {
+        // TODO: 调用删除API
+        this.$message.success('删除成功');
+        this.loadData();
+      });
+    },
+    
+    // 支付方式变化
+    handleMethodChange(value) {
+      // 清空其他字段
+      this.editForm.accountNumber = '';
+      this.editForm.bankName = '';
+      this.editForm.phoneNumber = '';
+      this.editForm.walletAddress = '';
+      this.editForm.networkType = '';
+      this.editForm.qrCodeUrl = '';
+    },
+    
+    // 保存
+    handleSave() {
+      this.$refs.editForm.validate((valid) => {
+        if (!valid) return;
+        
+        this.editDialog.loading = true;
+        
+        // TODO: 调用保存API
+        setTimeout(() => {
+          this.editDialog.loading = false;
+          this.editDialog.visible = false;
+          this.$message.success(this.editDialog.isEdit ? '编辑成功' : '添加成功');
           this.loadData();
-          this.loadStatistics();
-        } else {
-          this.$message.error(res.message || '审核失败');
-        }
-      } catch (error) {
-        console.error('审核失败:', error);
-        this.$message.error('操作失败，请稍后重试');
-      } finally {
-        this.approveDialog.loading = false;
+        }, 1000);
+      });
+    },
+    
+    // 重置编辑表单
+    resetEditForm() {
+      this.editForm = {
+        id: null,
+        methodCode: '',
+        accountName: '',
+        accountNumber: '',
+        bankName: '',
+        phoneNumber: '',
+        walletAddress: '',
+        networkType: '',
+        qrCodeUrl: '',
+        isActive: 1,
+        dailyLimit: null,
+        balanceLimit: null,
+        remark: ''
+      };
+      if (this.$refs.editForm) {
+        this.$refs.editForm.clearValidate();
       }
     },
-
-    // 拒绝申请
-    async handleReject() {
-      if (!this.rejectDialog.reason.trim()) {
-        this.$message.warning('请输入拒绝原因');
-        return;
+    
+    // 二维码上传成功
+    handleQRSuccess(res, file) {
+      this.editForm.qrCodeUrl = res.data.url;
+      this.$message.success('二维码上传成功');
+    },
+    
+    // 二维码上传前验证
+    beforeQRUpload(file) {
+      const isImage = file.type.indexOf('image/') === 0;
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      
+      if (!isImage) {
+        this.$message.error('只能上传图片文件!');
       }
-
-      this.rejectDialog.loading = true;
-      try {
-        const res = await getUserPayCashRejectApi({
-          id: this.rejectDialog.data.id,
-          reason: this.rejectDialog.reason,
-          password: this.rejectDialog.password
+      if (!isLt2M) {
+        this.$message.error('图片大小不能超过 2MB!');
+      }
+      return isImage && isLt2M;
+    },
+    
+    // 复制到剪贴板
+    copyToClipboard(text) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          this.$message.success('已复制到剪贴板');
         });
-
-        if (res.code === 1) {
-          this.$message.success(res.message || '已拒绝该提现申请');
-          this.rejectDialog.visible = false;
-          this.loadData();
-          this.loadStatistics();
-        } else {
-          this.$message.error(res.message || '操作失败');
-        }
-      } catch (error) {
-        console.error('拒绝失败:', error);
-        this.$message.error('操作失败，请稍后重试');
-      } finally {
-        this.rejectDialog.loading = false;
+      } else {
+        // 兼容性处理
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        this.$message.success('已复制到剪贴板');
       }
     },
-
-    // 获取状态类型
-    getStatusType(status) {
-      switch (status) {
-        case 0: return 'warning';  // 待审核
-        case 1: return 'success';  // 已通过
-        case 2: return 'danger';   // 已拒绝
-        default: return 'info';
-      }
-    },
-
-    // 获取状态文本
-    getStatusText(status) {
-      switch (status) {
-        case 0: return '待审核';
-        case 1: return '已通过';
-        case 2: return '已拒绝';
-        default: return '未知';
-      }
-    },
-
+    
     // 获取支付方式名称
-    getPayTypeName(payType) {
-      const method = this.paymentMethods.find(m => m.type === payType);
-      return method ? method.name : payType;
+    getMethodName(methodCode) {
+      const names = {
+        'aba': 'ABA银行',
+        'huiwang': '汇旺支付',
+        'usdt': 'USDT钱包'
+      };
+      return names[methodCode] || methodCode;
     },
-
+    
+    // 获取支付方式图标
+    getMethodIcon(methodCode) {
+      const icons = {
+        'aba': 'el-icon-bank-card',
+        'huiwang': 'el-icon-mobile',
+        'usdt': 'el-icon-coin'
+      };
+      return icons[methodCode] || 'el-icon-s-finance';
+    },
+    
     // 获取支付方式颜色
-    getPayTypeColor(payType) {
-      switch (payType) {
-        case 'usdt': return 'success';
-        case 'huiwang': return 'primary';
-        case 'aba': return 'warning';
-        default: return 'info';
-      }
+    getMethodColor(methodCode) {
+      const colors = {
+        'aba': 'primary',
+        'huiwang': 'warning',
+        'usdt': 'success'
+      };
+      return colors[methodCode] || 'info';
     },
-
+    
+    // 格式化钱包地址
+    formatWalletAddress(address) {
+      if (!address) return '';
+      if (address.length <= 20) return address;
+      return address.substring(0, 10) + '...' + address.substring(address.length - 10);
+    },
+    
+    // 格式化数字
+    formatNumber(num) {
+      if (!num) return '0.00';
+      return parseFloat(num).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    },
+    
+    // 格式化最后使用时间
+    formatLastUsed(datetime) {
+      if (!datetime) return '';
+      const date = new Date(datetime);
+      const now = new Date();
+      const diff = now - date;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      
+      if (days === 0) return '今天';
+      if (days === 1) return '昨天';
+      if (days < 7) return `${days}天前`;
+      return this.formatDateTime(datetime);
+    },
+    
     // 格式化日期时间
     formatDateTime(datetime) {
       if (!datetime) return '-';
@@ -844,41 +1013,81 @@ export default {
     background: #fff;
     padding: 20px;
     margin-bottom: 20px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
   }
   
   .statistics-section {
     background: #fff;
     padding: 20px;
     margin-bottom: 20px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
     
-    .stat-item {
-      text-align: center;
-      .stat-value {
-        font-size: 24px;
-        font-weight: bold;
-        color: #303133;
+    .stat-card {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      border-radius: 8px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      
+      &.total {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      
+      &.aba {
+        background: linear-gradient(135deg, #409EFF 0%, #5dade2 100%);
+      }
+      
+      &.huiwang {
+        background: linear-gradient(135deg, #E6A23C 0%, #f39c12 100%);
+      }
+      
+      &.usdt {
+        background: linear-gradient(135deg, #67C23A 0%, #2ecc71 100%);
+      }
+      
+      &.active {
+        background: linear-gradient(135deg, #67C23A 0%, #27ae60 100%);
+      }
+      
+      &.limit {
+        background: linear-gradient(135deg, #909399 0%, #7f8c8d 100%);
+      }
+      
+      .stat-icon {
+        font-size: 40px;
+        margin-right: 15px;
+        opacity: 0.8;
+      }
+      
+      .stat-content {
+        flex: 1;
         
-        &.stat-pending {
-          color: #E6A23C;
+        .stat-value {
+          font-size: 24px;
+          font-weight: bold;
+          margin-bottom: 4px;
         }
         
-        &.stat-approved {
-          color: #67C23A;
-        }
-        
-        &.stat-rejected {
-          color: #F56C6C;
+        .stat-label {
+          font-size: 14px;
+          opacity: 0.9;
         }
       }
       
-      .stat-label {
-        font-size: 14px;
-        color: #909399;
-        margin-top: 5px;
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        transform: translate(30px, -30px);
       }
     }
   }
@@ -888,81 +1097,162 @@ export default {
     padding: 10px 0;
   }
   
-  .user-info {
-    .username {
-      font-weight: bold;
-      color: #303133;
-    }
-    .user-id {
-      font-size: 12px;
-      color: #909399;
-      margin-top: 2px;
-    }
-    .user-phone {
-      font-size: 12px;
-      color: #606266;
-      margin-top: 2px;
-    }
-  }
-  
-  .amount-info {
-    .main-amount {
-      font-size: 16px;
-      font-weight: bold;
-      color: #303133;
-    }
-  }
-  
-  .fee-amount {
-    color: #F56C6C;
-    font-weight: bold;
-  }
-  
-  .actual-amount {
-    color: #67C23A;
-    font-weight: bold;
-    font-size: 14px;
-  }
-  
-  .payment-info {
-    .pay-type {
-      margin-bottom: 5px;
-    }
-    .account-info {
-      font-size: 12px;
-      color: #606266;
-      .account-number {
-        color: #909399;
-        word-break: break-all;
+  .payment-method {
+    .el-tag {
+      i {
+        margin-right: 4px;
       }
     }
   }
   
-  .approve-content {
-    .el-descriptions {
-      margin-bottom: 20px;
+  .account-info {
+    .account-name {
+      font-weight: bold;
+      color: #303133;
+      margin-bottom: 4px;
     }
+    
+    .account-detail {
+      font-size: 12px;
+      color: #606266;
+      margin-bottom: 2px;
+      
+      .label {
+        color: #909399;
+        margin-right: 4px;
+      }
+      
+      .wallet-address {
+        font-family: 'Courier New', monospace;
+        color: #67C23A;
+      }
+    }
+  }
+  
+  .bank-name {
+    font-size: 13px;
+    color: #606266;
+  }
+  
+  .limit-info {
+    .limit-amount {
+      font-weight: bold;
+      color: #E6A23C;
+    }
+  }
+  
+  .usage-info {
+    .usage-count {
+      font-size: 13px;
+      color: #303133;
+      margin-bottom: 2px;
+    }
+    
+    .last-used {
+      font-size: 11px;
+      color: #909399;
+    }
+  }
+  
+  // 二维码上传样式
+  .qr-uploader {
+    :deep(.el-upload) {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      width: 148px;
+      height: 148px;
+      
+      &:hover {
+        border-color: #409EFF;
+      }
+    }
+    
+    .qr-uploader-icon {
+      font-size: 28px;
+      color: #8c939d;
+      width: 148px;
+      height: 148px;
+      line-height: 148px;
+      text-align: center;
+    }
+    
+    .qr-image {
+      width: 148px;
+      height: 148px;
+      display: block;
+    }
+  }
+  
+  // 二维码预览样式
+  .qr-preview {
+    text-align: center;
+    
+    .qr-preview-image {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .qr-info {
+      p {
+        margin: 10px 0;
+      }
+      
+      .wallet-address-full {
+        font-family: 'Courier New', monospace;
+        color: #67C23A;
+        background: #f5f7fa;
+        padding: 8px;
+        border-radius: 4px;
+        word-break: break-all;
+        font-size: 12px;
+      }
+    }
+  }
+  
+  // 详情对话框中的钱包地址
+  .wallet-address-full {
+    font-family: 'Courier New', monospace;
+    color: #67C23A;
+    background: #f5f7fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    word-break: break-all;
+    font-size: 12px;
   }
 }
 
 // 响应式设计
 @media (max-width: 768px) {
   .page-content {
-    .el-form {
-      .el-row {
-        .el-col {
-          margin-bottom: 10px;
+    .statistics-section {
+      .stat-card {
+        margin-bottom: 10px;
+        padding: 15px;
+        
+        .stat-icon {
+          font-size: 28px;
+          margin-right: 10px;
+        }
+        
+        .stat-content .stat-value {
+          font-size: 18px;
         }
       }
     }
     
-    .amount-info .main-amount {
-      font-size: 14px;
-    }
-    
-    .statistics-section {
-      .stat-item .stat-value {
-        font-size: 18px;
+    .account-info {
+      .account-name {
+        font-size: 13px;
+      }
+      
+      .account-detail {
+        font-size: 11px;
       }
     }
   }
