@@ -451,9 +451,9 @@ export default {
         
         if (res.code === 1) {
           this.txianList = res.data.data || [];
-          this.totalCount = res.data.total || 0;
-          this.currentPage = res.data.current_page || 1;
-          this.pageSize = res.data.per_page || 10;
+          this.totalCount = parseInt(res.data.total) || 0;
+          this.currentPage = parseInt(res.data.current_page) || 1;
+          this.pageSize = parseInt(res.data.per_page) || 10;
           
           // 如果返回了统计数据，也更新统计信息
           if (res.data.statistics) {
@@ -511,19 +511,19 @@ export default {
     // 构建查询参数
     buildQueryParams() {
       const params = {
-        page: this.currentPage,
-        limit: this.pageSize
+        page: parseInt(this.currentPage),
+        limit: parseInt(this.pageSize)
       };
 
       // 添加搜索条件
       if (this.searchForm.username) params.username = this.searchForm.username;
-      if (this.searchForm.userId) params.userId = this.searchForm.userId;
+      if (this.searchForm.userId) params.userId = parseInt(this.searchForm.userId);
       if (this.searchForm.phone) params.phone = this.searchForm.phone;
-      if (this.searchForm.status !== '') params.status = this.searchForm.status;
+      if (this.searchForm.status !== '') params.status = parseInt(this.searchForm.status);
       if (this.searchForm.payType) params.payType = this.searchForm.payType;
       if (this.searchForm.adminName) params.adminName = this.searchForm.adminName;
-      if (this.searchForm.minAmount) params.minAmount = this.searchForm.minAmount;
-      if (this.searchForm.maxAmount) params.maxAmount = this.searchForm.maxAmount;
+      if (this.searchForm.minAmount) params.minAmount = parseFloat(this.searchForm.minAmount);
+      if (this.searchForm.maxAmount) params.maxAmount = parseFloat(this.searchForm.maxAmount);
 
       // 处理时间范围
       if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
@@ -538,7 +538,7 @@ export default {
     buildStatisticsParams() {
       const params = {};
       
-      if (this.searchForm.status !== '') params.status = this.searchForm.status;
+      if (this.searchForm.status !== '') params.status = parseInt(this.searchForm.status);
       if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
         params.start = this.searchForm.dateRange[0];
         params.end = this.searchForm.dateRange[1];
@@ -549,12 +549,12 @@ export default {
 
     // 分页处理
     handleCurrentChange(page) {
-      this.currentPage = page;
+      this.currentPage = parseInt(page);
       this.loadData();
     },
 
     handleSizeChange(size) {
-      this.pageSize = size;
+      this.pageSize = parseInt(size);
       this.currentPage = 1;
       this.loadData();
     },
