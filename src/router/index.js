@@ -372,6 +372,13 @@ export const allowRouters = [
         }
       },
       {
+        path: 'zhangHu',
+        component: () => import('@/pages/log/ZhangHu'),
+        meta: {
+          title: '公司账号'
+        }
+      },
+      {
         path: 'records',
         component: () => import('@/pages/log/Records'),
         meta: {
