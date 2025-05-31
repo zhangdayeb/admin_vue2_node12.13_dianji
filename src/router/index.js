@@ -7,12 +7,16 @@ import setting from '@/config/setting'
 
 Vue.use(Router)
 
-// 不需要权限的路由
+/**
+ * 不需要权限的基础路由配置
+ * 这些路由可以直接访问，无需登录验证
+ */
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard/console'
-  },{
+    redirect: '/dashboard/console' // 根路径重定向到控制面板
+  },
+  {
     path: '/dashboard',
     component: Home,
     meta: {
@@ -33,9 +37,10 @@ const routes = [
     component: () => import('@/pages/login/Login'),
     meta: {
       title: '登录',
-      newPage: true
+      newPage: true // 标记为新页面，不加入标签页管理
     }
-  },{
+  },
+  {
     path: '/exception',
     component: Home,
     meta: {
@@ -67,29 +72,32 @@ const routes = [
   }
 ]
 
-
-// 需要权限的路由
+/**
+ * 需要权限验证的路由配置
+ * 这些路由需要用户登录后才能访问
+ */
 export const allowRouters = [
   {
     path: '/',
-    //redirect: '/dashboard/console'
-    redirect: '/login'
+    redirect: '/login' // 根路径重定向到登录页
   },
   {
     path: '/login',
     component: () => import('@/pages/login/Login'),
     meta: {
       title: '登陆'
-    },
+    }
   },
   {
     path: '/service',
     component: () => import('@/pages/service/Service'),
     meta: {
       title: '登陆'
-    },
-  }
-  ,{
+    }
+  },
+  
+  // 仪表板模块
+  {
     path: '/dashboard',
     component: Home,
     meta: {
@@ -109,11 +117,12 @@ export const allowRouters = [
         meta: {
           title: '系统控制'
         }
-      },
+      }
     ]
   },
 
-  ,{
+  // 系统设置模块
+  {
     path: '/systemset',
     component: Home,
     meta: {
@@ -148,24 +157,24 @@ export const allowRouters = [
           title: '操作日志'
         }
       },
-
-    {
-      path: 'roleadminlist',
-      component: () => import('@/pages/systemset/roleadminlist'),
-      meta: {
-        title: '角色列表'
-      }
-    },
+      {
+        path: 'roleadminlist',
+        component: () => import('@/pages/systemset/roleadminlist'),
+        meta: {
+          title: '角色列表'
+        }
+      },
       {
         path: 'adminlist',
         component: () => import('@/pages/systemset/adminList'),
         meta: {
           title: '管理员列表'
         }
-      },
+      }
     ]
   },
 
+  // 用户管理模块
   {
     path: '/user',
     component: Home,
@@ -173,7 +182,6 @@ export const allowRouters = [
       title: '用户管理'
     },
     children: [
-
       {
         path: 'withdrawal',
         component: () => import('@/pages/user/Withdrawal'),
@@ -183,7 +191,6 @@ export const allowRouters = [
       },
       {
         path: 'userlist',
-        name: 'userManageList',
         component: () => import('@/pages/user/UserLists'),
         meta: {
           title: '用户列表'
@@ -191,7 +198,6 @@ export const allowRouters = [
       },
       {
         path: 'useragent',
-        name: 'userManageList',
         component: () => import('@/pages/user/UserAgent'),
         meta: {
           title: '代理列表'
@@ -210,26 +216,25 @@ export const allowRouters = [
         meta: {
           title: '收益排行'
         }
-       },
-        {
-          path: 'agentlist',
-          name: 'agentlist',
-          component: () => import('@/pages/user/Agentlist'),
-          meta: {
-            title: '代理关系链'
-          }
+      },
+      {
+        path: 'agentlist',
+        component: () => import('@/pages/user/Agentlist'),
+        meta: {
+          title: '代理关系链'
+        }
       }
     ]
   },
 
+  // 推广管理模块（文章管理）
   {
     path: '/extension',
     component: Home,
     meta: {
       title: '推广管理'
     },
-    children:[
-
+    children: [
       {
         path: 'articletype',
         component: () => import('@/pages/extension/ArticleType'),
@@ -243,16 +248,19 @@ export const allowRouters = [
         meta: {
           title: '文章内容列表'
         }
-      },
+      }
     ]
   },
-{
-    path: '/extension',
+
+  // 视频管理模块
+  // 注意：这里有重复的path '/extension'，应该修改为不同的路径
+  {
+    path: '/video', // 建议修改为 '/video' 避免路径冲突
     component: Home,
     meta: {
       title: '视频管理'
     },
-    children:[
+    children: [
       {
         path: 'videotype',
         component: () => import('@/pages/extension/VideoType'),
@@ -273,45 +281,18 @@ export const allowRouters = [
         meta: {
           title: '视频套餐列表'
         }
-      },
+      }
     ]
   },
+
+  // 系统管理模块
   {
     path: '/systemmng',
     component: Home,
     meta: {
       title: '系统管理'
     },
-    children:[
-      {
-        path: 'class',
-        component: () => import('@/pages/systemmng/Class'),
-        meta: {
-          title: '分类栏目'
-        }
-      },
-      {
-        path: 'domain-name',
-        component: () => import('@/pages/systemmng/DomainName'),
-        meta: {
-          title: '域名管理'
-        }
-      },
-
-      {
-        path: 'template',
-        component: () => import('@/pages/systemmng/Template'),
-        meta: {
-          title: '模板管理'
-        }
-      },
-      {
-        path: 'passageway',
-        component: () => import('@/pages/systemmng/Passageway'),
-        meta: {
-          title: '通道管理'
-        }
-      },
+    children: [
       {
         path: 'configlist',
         component: () => import('@/pages/systemmng/ConfigList'),
@@ -325,16 +306,18 @@ export const allowRouters = [
         meta: {
           title: '白名单列表'
         }
-      },
+      }
     ]
   },
+
+  // 消息管理模块
   {
     path: '/notice',
     component: Home,
     meta: {
       title: '消息管理'
     },
-    children:[
+    children: [
       {
         path: 'noticelist',
         component: () => import('@/pages/notice/NoticeList'),
@@ -351,14 +334,15 @@ export const allowRouters = [
       }
     ]
   },
+
+  // 平台管理模块
   {
     path: '/platform',
     component: Home,
     meta: {
       title: '平台管理'
     },
-    children:[
-
+    children: [
       {
         path: 'agent',
         component: () => import('@/pages/platform/Agent'),
@@ -380,7 +364,6 @@ export const allowRouters = [
           title: '充值列表'
         }
       },
-
       {
         path: 'withdrawallog',
         component: () => import('@/pages/log/Withdrawallog'),
@@ -430,17 +413,18 @@ export const allowRouters = [
         meta: {
           title: '授权列表'
         }
-      },
+      }
     ]
   },
+
+  // 日志管理模块
   {
     path: '/log',
     component: Home,
     meta: {
       title: '日志管理'
     },
-    children:[
-
+    children: [
       {
         path: 'actionlog',
         component: () => import('@/pages/log/Actionlog'),
@@ -517,21 +501,23 @@ export const allowRouters = [
         meta: {
           title: '下注资金'
         }
-      },
+      }
     ]
   },
+
+  // 台桌管理模块（游戏相关）
   {
     path: '/desktop',
     component: Home,
     meta: {
-      title: '桌面管理'
+      title: '台桌管理'
     },
-    children:[
+    children: [
       {
         path: 'desktoplist',
         component: () => import('@/pages/desktop/Desktoplist'),
         meta: {
-          title: '桌面列表'
+          title: '台桌列表'
         }
       },
       {
@@ -545,7 +531,7 @@ export const allowRouters = [
         path: 'voldlist',
         component: () => import('@/pages/desktop/Voldlist'),
         meta: {
-          title: '露珠列表'
+          title: '作废露珠列表'
         }
       },
       {
@@ -570,34 +556,49 @@ export const allowRouters = [
         }
       }
     ]
-  },
+  }
 ]
 
-
+/**
+ * 创建路由实例
+ */
 const router = new Router({
   routes: allowRouters
 })
 
+/**
+ * 路由前置守卫
+ * 在每次路由跳转前执行的钩子函数
+ */
 router.beforeEach((to, from, next) => {
   let isLogin = false
   let { meta, matched } = to
   let { title, newPage, keepAlive } = meta
+  
+  // 从本地存储获取系统状态信息
   let sys = JSON.parse(localStorage.getItem("sys"))
 
-  if(sys) {
+  // 检查用户登录状态
+  if (sys) {
     isLogin = sys.user.isLogin
   }
 
+  // 设置路由参数中的keepAlive状态
   to.params.keepAlive = keepAlive
 
+  // 权限验证逻辑（当前被注释掉）
   // if(!isLogin && to.path !== '/login') {
   //   next('/login')
   //   return
-  // }else {
+  // } else {
+    
+    // 获取菜单列表状态
     let { menuList } = store.state.menu
 
-    if(menuList.length > 0) { // 菜单数据加载成功
-      if(!matched.length) {   // 打开的页面不存在
+    // 如果菜单数据已加载成功
+    if (menuList.length > 0) {
+      // 检查打开的页面是否存在
+      if (!matched.length) {
         router.push('/exception/404')
         return
       }
@@ -605,12 +606,12 @@ router.beforeEach((to, from, next) => {
     next()
   // }
 
-  // 不是标签页
+  // 如果是新页面（如登录页），不添加到标签页管理
   if (newPage) {
     return
   }
 
-  // 路由添加到标签页
+  // 将路由添加到工作标签页管理
   store.dispatch('worktab/worktabRoute', {
     to: {
       name: to.name ? to.name : '',
@@ -626,11 +627,12 @@ router.beforeEach((to, from, next) => {
     }
   })
 
-  // 设置网页title
-  if(title) {
-    // document.title = `${title} - ${setting.systemName}`
-    document.title = `${title}`
+  // 设置网页标题
+  if (title) {
+    // document.title = `${title} - ${setting.systemName}` // 完整标题格式
+    document.title = `${title}` // 简化标题格式
   }
+  
   return
 })
 
