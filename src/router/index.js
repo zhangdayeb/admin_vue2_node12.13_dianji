@@ -92,7 +92,7 @@ export const allowRouters = [
     path: '/service',
     component: () => import('@/pages/service/Service'),
     meta: {
-      title: '登陆'
+      title: '客服'
     }
   },
   
@@ -182,13 +182,6 @@ export const allowRouters = [
       title: '用户管理'
     },
     children: [
-      {
-        path: 'withdrawal',
-        component: () => import('@/pages/user/Withdrawal'),
-        meta: {
-          title: '提现管理'
-        }
-      },
       {
         path: 'userlist',
         component: () => import('@/pages/user/UserLists'),
@@ -368,7 +361,14 @@ export const allowRouters = [
         path: 'withdrawallog',
         component: () => import('@/pages/log/Withdrawallog'),
         meta: {
-          title: '提现列表'
+          title: '代理提现列表'
+        }
+      },
+      {
+        path: 'userTixianList',
+        component: () => import('@/pages/log/UserTxianList'),
+        meta: {
+          title: '会员提现列表'
         }
       },
       {
@@ -461,7 +461,7 @@ export const allowRouters = [
         name: 'financeWithdrawList',
         component: () => import('@/pages/log/Withdrawallog'),
         meta: {
-          title: '提现列表'
+          title: '代理提现'
         }
       },
       {
