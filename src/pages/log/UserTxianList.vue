@@ -1,114 +1,177 @@
 <template>
   <div class='page-content'>
-    <table-bar :showTop="false" :columns="columns" @changeColumn="changeColumn">
-      <div slot="top">
-        <el-form label-width="80px">
-          <!-- 第一行搜索条件 -->
-          <el-row :gutter="20">
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="用户名：">
-                <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="用户ID：">
-                <el-input v-model="searchForm.userId" placeholder="请输入用户ID" clearable></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="手机号：">
-                <el-input v-model="searchForm.phone" placeholder="请输入手机号" clearable></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="提现状态：">
-                <el-select v-model="searchForm.status" clearable placeholder="请选择状态" style="width: 100%">
-                  <el-option label="待审核" value="0"></el-option>
-                  <el-option label="已通过" value="1"></el-option>
-                  <el-option label="已拒绝" value="2"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          
-          <!-- 第二行搜索条件 -->
-          <el-row :gutter="20">
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="支付方式：">
-                <el-select v-model="searchForm.payType" clearable placeholder="请选择支付方式" style="width: 100%">
-                  <el-option label="USDT-TRC20" value="usdt"></el-option>
-                  <el-option label="汇旺" value="huiwang"></el-option>
-                  <el-option label="ABA银行" value="aba"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="申请时间：">
-                <el-date-picker
-                  v-model="searchForm.dateRange"
-                  type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
-                  style="width: 100%">
-                </el-date-picker>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="金额范围：">
-                <el-input-number v-model="searchForm.minAmount" placeholder="最小金额" style="width: 48%"></el-input-number>
-                <span style="margin: 0 2%">-</span>
-                <el-input-number v-model="searchForm.maxAmount" placeholder="最大金额" style="width: 48%"></el-input-number>
-              </el-form-item>
-            </el-col>
-            <el-col :xs="24" :sm="12" :lg="6">
-              <el-form-item label="审核员：">
-                <el-input v-model="searchForm.adminName" placeholder="请输入审核员" clearable></el-input>
-              </el-form-item>
-            </el-col>
-          </el-row>
-          
-          <!-- 第三行操作按钮 -->
-          <el-row :gutter="20">
-            <el-col :span="24" style="text-align: right;">
-              <el-button type="primary" @click="handleSearch">搜索</el-button>
-              <el-button @click="handleReset">重置</el-button>
-              <el-button type="success" plain @click="handleExport">导出</el-button>
-            </el-col>
-          </el-row>
-        </el-form>
-      </div>
-      
-      <div slot="bottom">
-        <el-button type="primary" plain @click="handleBatchApprove" :disabled="!selectedRows.length">
-          批量审核通过
-        </el-button>
-        <el-button type="danger" plain @click="handleBatchReject" :disabled="!selectedRows.length">
-          批量拒绝
-        </el-button>
-        <el-button @click="handleRefresh">刷新</el-button>
-        <span style="margin-left: 10px; color: #909399;">
-          已选择 {{ selectedRows.length }} 条记录
-        </span>
-      </div>
-    </table-bar>
+    <!-- 搜索区域 -->
+    <div class="search-section">
+      <el-form label-width="80px">
+        <!-- 第一行搜索条件 -->
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="用户名：">
+              <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="用户ID：">
+              <el-input v-model="searchForm.userId" placeholder="请输入用户ID" clearable></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="手机号：">
+              <el-input v-model="searchForm.phone" placeholder="请输入手机号" clearable></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="提现状态：">
+              <el-select v-model="searchForm.status" clearable placeholder="请选择状态" style="width: 100%">
+                <el-option label="待审核" value="0"></el-option>
+                <el-option label="已通过" value="1"></el-option>
+                <el-option label="已拒绝" value="2"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 第二行搜索条件 -->
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="支付方式：">
+              <el-select v-model="searchForm.payType" clearable placeholder="请选择支付方式" style="width: 100%">
+                <el-option 
+                  v-for="method in paymentMethods" 
+                  :key="method.type" 
+                  :label="method.name" 
+                  :value="method.type">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="申请时间：">
+              <el-date-picker
+                v-model="searchForm.dateRange"
+                type="datetimerange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                style="width: 100%">
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="金额范围：">
+              <el-input-number v-model="searchForm.minAmount" placeholder="最小金额" style="width: 48%"></el-input-number>
+              <span style="margin: 0 2%">-</span>
+              <el-input-number v-model="searchForm.maxAmount" placeholder="最大金额" style="width: 48%"></el-input-number>
+            </el-form-item>
+          </el-col>
+          <el-col :xs="24" :sm="12" :lg="6">
+            <el-form-item label="审核员：">
+              <el-select v-model="searchForm.adminName" clearable placeholder="请选择审核员" style="width: 100%">
+                <el-option 
+                  v-for="admin in adminUsers" 
+                  :key="admin.id" 
+                  :label="admin.nickname" 
+                  :value="admin.username">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <!-- 第三行操作按钮 -->
+        <el-row :gutter="20">
+          <el-col :span="24" style="text-align: right;">
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
+            <el-button type="success" plain @click="handleExport">导出</el-button>
+            <el-button type="info" plain @click="loadStatistics">刷新统计</el-button>
+          </el-col>
+        </el-row>
+      </el-form>
+    </div>
     
-    <tao-table :data="filteredList" :showPage="true" ref="table" @selection-change="handleSelectionChange">
+    <!-- 统计信息 -->
+    <div class="statistics-section" v-if="statistics">
+      <el-row :gutter="20">
+        <el-col :span="4">
+          <div class="stat-item">
+            <div class="stat-value">${{ statistics.totalAmount }}</div>
+            <div class="stat-label">总提现金额</div>
+          </div>
+        </el-col>
+        <el-col :span="4">
+          <div class="stat-item">
+            <div class="stat-value">${{ statistics.totalFee }}</div>
+            <div class="stat-label">总手续费</div>
+          </div>
+        </el-col>
+        <el-col :span="4">
+          <div class="stat-item">
+            <div class="stat-value">${{ statistics.totalActual }}</div>
+            <div class="stat-label">总实际到账</div>
+          </div>
+        </el-col>
+        <el-col :span="4">
+          <div class="stat-item">
+            <div class="stat-value stat-pending">{{ statistics.pendingCount }}</div>
+            <div class="stat-label">待审核</div>
+          </div>
+        </el-col>
+        <el-col :span="4">
+          <div class="stat-item">
+            <div class="stat-value stat-approved">{{ statistics.approvedCount }}</div>
+            <div class="stat-label">已通过</div>
+          </div>
+        </el-col>
+        <el-col :span="4">
+          <div class="stat-item">
+            <div class="stat-value stat-rejected">{{ statistics.rejectedCount }}</div>
+            <div class="stat-label">已拒绝</div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+    
+    <!-- 操作按钮区域 -->
+    <div class="action-section">
+      <el-button type="primary" plain @click="handleBatchApprove" :disabled="!selectedRows.length">
+        批量审核通过
+      </el-button>
+      <el-button type="danger" plain @click="handleBatchReject" :disabled="!selectedRows.length">
+        批量拒绝
+      </el-button>
+      <el-button @click="handleRefresh">刷新</el-button>
+      <span style="margin-left: 10px; color: #909399;">
+        已选择 {{ selectedRows.length }} 条记录
+      </span>
+    </div>
+    
+    <!-- 数据表格 -->
+    <el-table 
+      :data="txianList" 
+      border 
+      style="margin-top: 15px"
+      @selection-change="handleSelectionChange"
+      v-loading="loading"
+      ref="table">
+      
       <!-- 选择列 -->
       <el-table-column type="selection" width="55" align="center"></el-table-column>
       
       <!-- 用户信息 -->
-      <el-table-column label="用户信息" width="120" v-if="columns[0].show">
+      <el-table-column label="用户信息" width="120">
         <template slot-scope="scope">
           <div class="user-info">
             <div class="username">{{ scope.row.userName }}</div>
             <div class="user-id">ID: {{ scope.row.uId }}</div>
+            <div class="user-phone" v-if="scope.row.userPhone">{{ scope.row.userPhone }}</div>
           </div>
         </template>
       </el-table-column>
       
       <!-- 提现金额 -->
-      <el-table-column label="提现金额" prop="money" width="120" v-if="columns[1].show">
+      <el-table-column label="提现金额" prop="money" width="120">
         <template slot-scope="scope">
           <div class="amount-info">
             <div class="main-amount">${{ scope.row.money }}</div>
@@ -117,21 +180,21 @@
       </el-table-column>
       
       <!-- 手续费 -->
-      <el-table-column label="手续费" prop="moneyFee" width="100" v-if="columns[2].show">
+      <el-table-column label="手续费" prop="moneyFee" width="100">
         <template slot-scope="scope">
           <span class="fee-amount">-${{ scope.row.moneyFee }}</span>
         </template>
       </el-table-column>
       
       <!-- 实际到账 -->
-      <el-table-column label="实际到账" prop="momeyActual" width="120" v-if="columns[3].show">
+      <el-table-column label="实际到账" prop="momeyActual" width="120">
         <template slot-scope="scope">
           <span class="actual-amount">${{ scope.row.momeyActual }}</span>
         </template>
       </el-table-column>
       
       <!-- 收款信息 -->
-      <el-table-column label="收款信息" width="200" v-if="columns[4].show">
+      <el-table-column label="收款信息" width="200">
         <template slot-scope="scope">
           <div class="payment-info">
             <div class="pay-type">
@@ -148,14 +211,14 @@
       </el-table-column>
       
       <!-- 申请时间 -->
-      <el-table-column label="申请时间" prop="createTime" width="160" v-if="columns[5].show">
+      <el-table-column label="申请时间" prop="createTime" width="160">
         <template slot-scope="scope">
           {{ formatDateTime(scope.row.createTime) }}
         </template>
       </el-table-column>
       
       <!-- 状态 -->
-      <el-table-column label="状态" prop="status" width="100" v-if="columns[6].show">
+      <el-table-column label="状态" prop="status" width="100">
         <template slot-scope="scope">
           <el-tag size="mini" :type="getStatusType(scope.row.status)">
             {{ getStatusText(scope.row.status) }}
@@ -164,9 +227,16 @@
       </el-table-column>
       
       <!-- 审核时间 -->
-      <el-table-column label="审核时间" prop="successTime" width="160" v-if="columns[7].show">
+      <el-table-column label="审核时间" prop="successTime" width="160">
         <template slot-scope="scope">
           {{ scope.row.successTime ? formatDateTime(scope.row.successTime) : '-' }}
+        </template>
+      </el-table-column>
+      
+      <!-- 审核员 -->
+      <el-table-column label="审核员" prop="adminName" width="100">
+        <template slot-scope="scope">
+          {{ scope.row.adminName || '-' }}
         </template>
       </el-table-column>
       
@@ -194,7 +264,21 @@
           </el-button>
         </template>
       </el-table-column>
-    </tao-table>
+    </el-table>
+
+    <!-- 分页 -->
+    <template v-if="totalCount > 0">
+      <el-pagination 
+        @current-change="handleCurrentChange"
+        @size-change="handleSizeChange"
+        :current-page="currentPage"
+        :page-sizes="[10, 20, 50, 100]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="totalCount"
+        style="margin-top: 20px; text-align: right;">
+      </el-pagination>
+    </template>
 
     <!-- 审核对话框 -->
     <el-dialog title="审核提现申请" width="600px" :visible.sync="approveDialog.visible">
@@ -220,13 +304,20 @@
                 placeholder="请输入审核意见（可选）">
               </el-input>
             </el-form-item>
+            <el-form-item label="操作密码：">
+              <el-input 
+                v-model="approveDialog.password" 
+                type="password" 
+                placeholder="请输入操作密码（可选）">
+              </el-input>
+            </el-form-item>
           </el-form>
         </div>
       </div>
       
       <span slot="footer" class="dialog-footer">
         <el-button @click="approveDialog.visible = false">取消</el-button>
-        <el-button type="primary" @click="handleApprove">确认通过</el-button>
+        <el-button type="primary" @click="handleApprove" :loading="approveDialog.loading">确认通过</el-button>
       </span>
     </el-dialog>
 
@@ -241,17 +332,24 @@
             placeholder="请输入拒绝原因">
           </el-input>
         </el-form-item>
+        <el-form-item label="操作密码：">
+          <el-input 
+            v-model="rejectDialog.password" 
+            type="password" 
+            placeholder="请输入操作密码（可选）">
+          </el-input>
+        </el-form-item>
       </el-form>
       
       <span slot="footer" class="dialog-footer">
         <el-button @click="rejectDialog.visible = false">取消</el-button>
-        <el-button type="danger" @click="handleReject">确认拒绝</el-button>
+        <el-button type="danger" @click="handleReject" :loading="rejectDialog.loading">确认拒绝</el-button>
       </span>
     </el-dialog>
 
     <!-- 详情对话框 -->
     <el-dialog title="提现详情" width="700px" :visible.sync="detailDialog.visible">
-      <el-descriptions :column="2" border>
+      <el-descriptions :column="2" border v-if="detailDialog.data">
         <el-descriptions-item label="用户ID">{{ detailDialog.data.uId }}</el-descriptions-item>
         <el-descriptions-item label="用户名">{{ detailDialog.data.userName }}</el-descriptions-item>
         <el-descriptions-item label="提现金额">${{ detailDialog.data.money }}</el-descriptions-item>
@@ -278,10 +376,29 @@
 </template>
 
 <script>
+import {
+  getUserPayCashListApi,
+  getUserPayCashDetailApi,
+  getUserPayCashApproveApi,
+  getUserPayCashBatchApproveApi,
+  getUserPayCashStatisticsApi,
+  getUserPayCashExportApi,
+  getPaymentMethodsApi,
+  getAdminUsersApi,
+  getUserPayCashPassApi,
+  getUserPayCashRejectApi,
+  getUserPayCashBatchPassApi,
+  getUserPayCashBatchRejectApi
+} from '@/api/UserPayCashApi'
+
 export default {
   name: 'UserTxianList',
   data() {
     return {
+      loading: false,
+      currentPage: 1,
+      pageSize: 10,
+      totalCount: 0,
       searchForm: {
         username: '',
         userId: '',
@@ -294,202 +411,161 @@ export default {
         adminName: ''
       },
       selectedRows: [],
+      txianList: [],
+      statistics: null,
+      paymentMethods: [],
+      adminUsers: [],
       approveDialog: {
         visible: false,
+        loading: false,
         data: {},
-        remark: ''
+        remark: '',
+        password: ''
       },
       rejectDialog: {
         visible: false,
+        loading: false,
         data: {},
-        reason: ''
+        reason: '',
+        password: ''
       },
       detailDialog: {
         visible: false,
         data: {}
-      },
-      // 模拟数据
-      txianList: [
-        {
-          id: 1,
-          createTime: '2025-05-30 22:52:07',
-          successTime: null,
-          money: '100.00',
-          moneyBalance: '10001390.00',
-          moneyFee: '2.00',
-          momeyActual: '98.00',
-          msg: '用户申请提现',
-          uId: 7,
-          userName: 'zhangsan',
-          uIp: '98.159.43.112',
-          uCity: '',
-          adminUid: 0,
-          status: 0,
-          payType: 'usdt',
-          uBankName: 'USDT-TRC20',
-          uBackCard: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE',
-          uBackUserName: 'zhangsan',
-          marketUid: 0
-        },
-        {
-          id: 2,
-          createTime: '2025-05-30 22:52:28',
-          successTime: '2025-05-31 10:30:15',
-          money: '1000.00',
-          moneyBalance: '10001290.00',
-          moneyFee: '20.00',
-          momeyActual: '980.00',
-          msg: '用户申请提现',
-          uId: 7,
-          userName: 'zhangsan',
-          uIp: '98.159.43.112',
-          uCity: '',
-          adminUid: 1,
-          status: 1,
-          payType: 'usdt',
-          uBankName: 'USDT-TRC20',
-          uBackCard: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE',
-          uBackUserName: 'zhangsan',
-          marketUid: 0
-        },
-        {
-          id: 3,
-          createTime: '2025-05-31 17:41:13',
-          successTime: null,
-          money: '5000.00',
-          moneyBalance: '518440.00',
-          moneyFee: '100.00',
-          momeyActual: '4900.00',
-          msg: '用户申请提现',
-          uId: 16,
-          userName: 'lisi',
-          uIp: '114.134.191.164',
-          uCity: '',
-          adminUid: 0,
-          status: 0,
-          payType: 'huiwang',
-          uBankName: '汇旺',
-          uBackCard: '017919380',
-          uBackUserName: 'Ahua',
-          marketUid: 0
-        },
-        {
-          id: 4,
-          createTime: '2025-05-31 17:41:56',
-          successTime: '2025-05-31 18:15:30',
-          money: '5000.00',
-          moneyBalance: '513440.00',
-          moneyFee: '100.00',
-          momeyActual: '4900.00',
-          msg: '用户申请提现',
-          uId: 16,
-          userName: 'lisi',
-          uIp: '114.134.191.164',
-          uCity: '',
-          adminUid: 2,
-          status: 2,
-          payType: 'huiwang',
-          uBankName: '汇旺',
-          uBackCard: '017919380',
-          uBackUserName: 'Ahua',
-          marketUid: 0
-        },
-        {
-          id: 5,
-          createTime: '2025-05-31 15:30:45',
-          successTime: null,
-          money: '2000.00',
-          moneyBalance: '8500.00',
-          moneyFee: '40.00',
-          momeyActual: '1960.00',
-          msg: '用户申请提现',
-          uId: 39,
-          userName: 'wangwu',
-          uIp: '192.168.1.100',
-          uCity: '北京',
-          adminUid: 0,
-          status: 0,
-          payType: 'aba',
-          uBankName: 'ABA银行',
-          uBackCard: '001234567890',
-          uBackUserName: '王五',
-          marketUid: 0
-        },
-        {
-          id: 6,
-          createTime: '2025-05-31 14:22:18',
-          successTime: '2025-05-31 16:45:20',
-          money: '800.00',
-          moneyBalance: '5200.00',
-          moneyFee: '16.00',
-          momeyActual: '784.00',
-          msg: '用户申请提现',
-          uId: 41,
-          userName: 'zhaoliu',
-          uIp: '203.45.67.89',
-          uCity: '上海',
-          adminUid: 1,
-          status: 1,
-          payType: 'usdt',
-          uBankName: 'USDT-ERC20',
-          uBackCard: '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B',
-          uBackUserName: '赵六',
-          marketUid: 0
-        }
-      ],
-      columns: [
-        { name: "用户信息", show: true },
-        { name: "提现金额", show: true },
-        { name: "手续费", show: true },
-        { name: "实际到账", show: true },
-        { name: "收款信息", show: true },
-        { name: "申请时间", show: true },
-        { name: "状态", show: true },
-        { name: "审核时间", show: true },
-      ]
+      }
     };
   },
-  computed: {
-    filteredList() {
-      let list = [...this.txianList];
-      
-      // 用户名筛选
-      if (this.searchForm.username) {
-        list = list.filter(item => 
-          item.userName.includes(this.searchForm.username)
-        );
-      }
-      
-      // 用户ID筛选
-      if (this.searchForm.userId) {
-        list = list.filter(item => 
-          item.uId.toString().includes(this.searchForm.userId)
-        );
-      }
-      
-      // 状态筛选
-      if (this.searchForm.status !== '') {
-        list = list.filter(item => 
-          item.status.toString() === this.searchForm.status
-        );
-      }
-      
-      // 支付方式筛选
-      if (this.searchForm.payType) {
-        list = list.filter(item => 
-          item.payType === this.searchForm.payType
-        );
-      }
-      
-      return list;
-    }
+  mounted() {
+    this.loadData();
+    this.loadPaymentMethods();
+    this.loadAdminUsers();
+    this.loadStatistics();
   },
   methods: {
+    // 加载列表数据
+    async loadData() {
+      this.loading = true;
+      try {
+        const params = this.buildQueryParams();
+        const res = await getUserPayCashListApi(params);
+        
+        if (res.code === 1) {
+          this.txianList = res.data.data || [];
+          this.totalCount = res.data.total || 0;
+          this.currentPage = res.data.current_page || 1;
+          this.pageSize = res.data.per_page || 10;
+          
+          // 如果返回了统计数据，也更新统计信息
+          if (res.data.statistics) {
+            this.statistics = res.data.statistics;
+          }
+        } else {
+          this.$message.error(res.message || '获取数据失败');
+        }
+      } catch (error) {
+        console.error('加载数据失败:', error);
+        this.$message.error('网络错误，请稍后重试');
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 加载统计数据
+    async loadStatistics() {
+      try {
+        const params = this.buildStatisticsParams();
+        const res = await getUserPayCashStatisticsApi(params);
+        
+        if (res.code === 1) {
+          this.statistics = res.data;
+        }
+      } catch (error) {
+        console.error('加载统计数据失败:', error);
+      }
+    },
+
+    // 加载支付方式
+    async loadPaymentMethods() {
+      try {
+        const res = await getPaymentMethodsApi();
+        if (res.code === 1) {
+          this.paymentMethods = res.data || [];
+        }
+      } catch (error) {
+        console.error('加载支付方式失败:', error);
+      }
+    },
+
+    // 加载管理员列表
+    async loadAdminUsers() {
+      try {
+        const res = await getAdminUsersApi();
+        if (res.code === 1) {
+          this.adminUsers = res.data || [];
+        }
+      } catch (error) {
+        console.error('加载管理员列表失败:', error);
+      }
+    },
+
+    // 构建查询参数
+    buildQueryParams() {
+      const params = {
+        page: this.currentPage,
+        limit: this.pageSize
+      };
+
+      // 添加搜索条件
+      if (this.searchForm.username) params.username = this.searchForm.username;
+      if (this.searchForm.userId) params.userId = this.searchForm.userId;
+      if (this.searchForm.phone) params.phone = this.searchForm.phone;
+      if (this.searchForm.status !== '') params.status = this.searchForm.status;
+      if (this.searchForm.payType) params.payType = this.searchForm.payType;
+      if (this.searchForm.adminName) params.adminName = this.searchForm.adminName;
+      if (this.searchForm.minAmount) params.minAmount = this.searchForm.minAmount;
+      if (this.searchForm.maxAmount) params.maxAmount = this.searchForm.maxAmount;
+
+      // 处理时间范围
+      if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
+        params.start = this.searchForm.dateRange[0];
+        params.end = this.searchForm.dateRange[1];
+      }
+
+      return params;
+    },
+
+    // 构建统计参数
+    buildStatisticsParams() {
+      const params = {};
+      
+      if (this.searchForm.status !== '') params.status = this.searchForm.status;
+      if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
+        params.start = this.searchForm.dateRange[0];
+        params.end = this.searchForm.dateRange[1];
+      }
+
+      return params;
+    },
+
+    // 分页处理
+    handleCurrentChange(page) {
+      this.currentPage = page;
+      this.loadData();
+    },
+
+    handleSizeChange(size) {
+      this.pageSize = size;
+      this.currentPage = 1;
+      this.loadData();
+    },
+
     // 搜索
     handleSearch() {
-      this.$message.success('搜索完成');
+      this.currentPage = 1;
+      this.loadData();
+      this.loadStatistics();
     },
-    
+
     // 重置
     handleReset() {
       this.searchForm = {
@@ -503,137 +579,217 @@ export default {
         maxAmount: null,
         adminName: ''
       };
-      this.$message.info('已重置搜索条件');
+      this.currentPage = 1;
+      this.loadData();
+      this.loadStatistics();
     },
-    
+
     // 导出
-    handleExport() {
-      this.$message.success('正在导出数据...');
+    async handleExport() {
+      try {
+        const params = this.buildQueryParams();
+        delete params.page;
+        delete params.limit;
+        
+        const res = await getUserPayCashExportApi(params);
+        if (res.code === 1) {
+          this.$message.success('导出成功');
+          // 这里可以处理下载逻辑
+          if (res.data.downloadUrl) {
+            window.open(res.data.downloadUrl);
+          }
+        } else {
+          this.$message.error(res.message || '导出失败');
+        }
+      } catch (error) {
+        console.error('导出失败:', error);
+        this.$message.error('导出失败，请稍后重试');
+      }
     },
-    
+
     // 刷新
     handleRefresh() {
-      this.$message.success('数据已刷新');
+      this.loadData();
+      this.loadStatistics();
     },
-    
+
     // 选择变化
     handleSelectionChange(selection) {
       this.selectedRows = selection;
     },
-    
+
     // 批量审核通过
     handleBatchApprove() {
       if (this.selectedRows.length === 0) {
         this.$message.warning('请选择要审核的记录');
         return;
       }
-      
-      this.$confirm(`确定要批量通过 ${this.selectedRows.length} 条提现申请吗？`, '确认操作', {
+
+      const pendingRows = this.selectedRows.filter(row => row.status === 0);
+      if (pendingRows.length === 0) {
+        this.$message.warning('所选记录中没有待审核的申请');
+        return;
+      }
+
+      this.$confirm(`确定要批量通过 ${pendingRows.length} 条提现申请吗？`, '确认操作', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        // 模拟批量审核
-        this.selectedRows.forEach(row => {
-          const index = this.txianList.findIndex(item => item.id === row.id);
-          if (index !== -1 && this.txianList[index].status === 0) {
-            this.txianList[index].status = 1;
-            this.txianList[index].successTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-            this.txianList[index].adminUid = 1;
+      }).then(async () => {
+        try {
+          const ids = pendingRows.map(row => row.id);
+          const res = await getUserPayCashBatchPassApi({ ids });
+          
+          if (res.code === 1) {
+            this.$message.success(res.message || '批量审核通过成功');
+            this.selectedRows = [];
+            this.loadData();
+            this.loadStatistics();
+          } else {
+            this.$message.error(res.message || '批量审核失败');
           }
-        });
-        this.$message.success(`已批量通过 ${this.selectedRows.length} 条申请`);
-        this.selectedRows = [];
+        } catch (error) {
+          console.error('批量审核失败:', error);
+          this.$message.error('操作失败，请稍后重试');
+        }
       });
     },
-    
+
     // 批量拒绝
     handleBatchReject() {
       if (this.selectedRows.length === 0) {
         this.$message.warning('请选择要拒绝的记录');
         return;
       }
-      
-      this.$confirm(`确定要批量拒绝 ${this.selectedRows.length} 条提现申请吗？`, '确认操作', {
+
+      const pendingRows = this.selectedRows.filter(row => row.status === 0);
+      if (pendingRows.length === 0) {
+        this.$message.warning('所选记录中没有待审核的申请');
+        return;
+      }
+
+      this.$prompt('请输入拒绝原因', '批量拒绝', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        // 模拟批量拒绝
-        this.selectedRows.forEach(row => {
-          const index = this.txianList.findIndex(item => item.id === row.id);
-          if (index !== -1 && this.txianList[index].status === 0) {
-            this.txianList[index].status = 2;
-            this.txianList[index].successTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-            this.txianList[index].adminUid = 1;
+        inputType: 'textarea',
+        inputValidator: (value) => {
+          if (!value || !value.trim()) {
+            return '请输入拒绝原因';
           }
-        });
-        this.$message.success(`已批量拒绝 ${this.selectedRows.length} 条申请`);
-        this.selectedRows = [];
+          return true;
+        }
+      }).then(async ({ value }) => {
+        try {
+          const ids = pendingRows.map(row => row.id);
+          const res = await getUserPayCashBatchRejectApi({ 
+            ids, 
+            reason: value 
+          });
+          
+          if (res.code === 1) {
+            this.$message.success(res.message || '批量拒绝成功');
+            this.selectedRows = [];
+            this.loadData();
+            this.loadStatistics();
+          } else {
+            this.$message.error(res.message || '批量拒绝失败');
+          }
+        } catch (error) {
+          console.error('批量拒绝失败:', error);
+          this.$message.error('操作失败，请稍后重试');
+        }
       });
     },
-    
+
     // 显示审核对话框
     showApproveDialog(row) {
       this.approveDialog.data = { ...row };
       this.approveDialog.remark = '';
+      this.approveDialog.password = '';
       this.approveDialog.visible = true;
     },
-    
+
     // 显示拒绝对话框
     showRejectDialog(row) {
       this.rejectDialog.data = { ...row };
       this.rejectDialog.reason = '';
+      this.rejectDialog.password = '';
       this.rejectDialog.visible = true;
     },
-    
+
     // 显示详情
-    showDetail(row) {
-      this.detailDialog.data = { ...row };
-      this.detailDialog.visible = true;
-    },
-    
-    // 审核通过
-    handleApprove() {
-      const index = this.txianList.findIndex(item => item.id === this.approveDialog.data.id);
-      if (index !== -1) {
-        this.txianList[index].status = 1;
-        this.txianList[index].successTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        this.txianList[index].adminUid = 1;
-        if (this.approveDialog.remark) {
-          this.txianList[index].msg = this.approveDialog.remark;
+    async showDetail(row) {
+      try {
+        const res = await getUserPayCashDetailApi({ id: row.id });
+        if (res.code === 1) {
+          this.detailDialog.data = res.data;
+          this.detailDialog.visible = true;
+        } else {
+          this.$message.error(res.message || '获取详情失败');
         }
+      } catch (error) {
+        console.error('获取详情失败:', error);
+        this.$message.error('获取详情失败，请稍后重试');
       }
-      
-      this.approveDialog.visible = false;
-      this.$message.success('审核通过成功');
     },
-    
+
+    // 审核通过
+    async handleApprove() {
+      this.approveDialog.loading = true;
+      try {
+        const res = await getUserPayCashPassApi({
+          id: this.approveDialog.data.id,
+          remark: this.approveDialog.remark,
+          password: this.approveDialog.password
+        });
+
+        if (res.code === 1) {
+          this.$message.success(res.message || '审核通过成功');
+          this.approveDialog.visible = false;
+          this.loadData();
+          this.loadStatistics();
+        } else {
+          this.$message.error(res.message || '审核失败');
+        }
+      } catch (error) {
+        console.error('审核失败:', error);
+        this.$message.error('操作失败，请稍后重试');
+      } finally {
+        this.approveDialog.loading = false;
+      }
+    },
+
     // 拒绝申请
-    handleReject() {
+    async handleReject() {
       if (!this.rejectDialog.reason.trim()) {
         this.$message.warning('请输入拒绝原因');
         return;
       }
-      
-      const index = this.txianList.findIndex(item => item.id === this.rejectDialog.data.id);
-      if (index !== -1) {
-        this.txianList[index].status = 2;
-        this.txianList[index].successTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        this.txianList[index].adminUid = 1;
-        this.txianList[index].msg = this.rejectDialog.reason;
+
+      this.rejectDialog.loading = true;
+      try {
+        const res = await getUserPayCashRejectApi({
+          id: this.rejectDialog.data.id,
+          reason: this.rejectDialog.reason,
+          password: this.rejectDialog.password
+        });
+
+        if (res.code === 1) {
+          this.$message.success(res.message || '已拒绝该提现申请');
+          this.rejectDialog.visible = false;
+          this.loadData();
+          this.loadStatistics();
+        } else {
+          this.$message.error(res.message || '操作失败');
+        }
+      } catch (error) {
+        console.error('拒绝失败:', error);
+        this.$message.error('操作失败，请稍后重试');
+      } finally {
+        this.rejectDialog.loading = false;
       }
-      
-      this.rejectDialog.visible = false;
-      this.$message.success('已拒绝该提现申请');
     },
-    
-    // 列显示控制
-    changeColumn(columns) {
-      this.columns = columns;
-      this.$refs.table.doLayout();
-    },
-    
+
     // 获取状态类型
     getStatusType(status) {
       switch (status) {
@@ -643,7 +799,7 @@ export default {
         default: return 'info';
       }
     },
-    
+
     // 获取状态文本
     getStatusText(status) {
       switch (status) {
@@ -653,17 +809,13 @@ export default {
         default: return '未知';
       }
     },
-    
+
     // 获取支付方式名称
     getPayTypeName(payType) {
-      switch (payType) {
-        case 'usdt': return 'USDT';
-        case 'huiwang': return '汇旺';
-        case 'aba': return 'ABA银行';
-        default: return payType;
-      }
+      const method = this.paymentMethods.find(m => m.type === payType);
+      return method ? method.name : payType;
     },
-    
+
     // 获取支付方式颜色
     getPayTypeColor(payType) {
       switch (payType) {
@@ -673,7 +825,7 @@ export default {
         default: return 'info';
       }
     },
-    
+
     // 格式化日期时间
     formatDateTime(datetime) {
       if (!datetime) return '-';
@@ -688,6 +840,54 @@ export default {
   width: 100%;
   height: 100%;
   
+  .search-section {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .statistics-section {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    
+    .stat-item {
+      text-align: center;
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #303133;
+        
+        &.stat-pending {
+          color: #E6A23C;
+        }
+        
+        &.stat-approved {
+          color: #67C23A;
+        }
+        
+        &.stat-rejected {
+          color: #F56C6C;
+        }
+      }
+      
+      .stat-label {
+        font-size: 14px;
+        color: #909399;
+        margin-top: 5px;
+      }
+    }
+  }
+  
+  .action-section {
+    margin-bottom: 15px;
+    padding: 10px 0;
+  }
+  
   .user-info {
     .username {
       font-weight: bold;
@@ -696,6 +896,11 @@ export default {
     .user-id {
       font-size: 12px;
       color: #909399;
+      margin-top: 2px;
+    }
+    .user-phone {
+      font-size: 12px;
+      color: #606266;
       margin-top: 2px;
     }
   }
@@ -753,6 +958,12 @@ export default {
     
     .amount-info .main-amount {
       font-size: 14px;
+    }
+    
+    .statistics-section {
+      .stat-item .stat-value {
+        font-size: 18px;
+      }
     }
   }
 }
