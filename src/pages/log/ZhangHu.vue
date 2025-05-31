@@ -8,17 +8,13 @@
           <el-col :xs="24" :sm="12" :lg="6">
             <el-form-item label="支付方式：">
               <el-select v-model="searchForm.methodCode" clearable placeholder="请选择支付方式" style="width: 100%">
-                <el-option label="ABA银行" value="aba">
-                  <i class="el-icon-bank-card" style="color: #409EFF; margin-right: 8px;"></i>
-                  ABA银行
-                </el-option>
-                <el-option label="汇旺支付" value="huiwang">
-                  <i class="el-icon-mobile" style="color: #E6A23C; margin-right: 8px;"></i>
-                  汇旺支付
-                </el-option>
-                <el-option label="USDT钱包" value="usdt">
-                  <i class="el-icon-coin" style="color: #67C23A; margin-right: 8px;"></i>
-                  USDT钱包
+                <el-option 
+                  v-for="method in paymentMethods" 
+                  :key="method.code" 
+                  :label="method.name" 
+                  :value="method.code">
+                  <i :class="method.icon" :style="`color: ${getMethodColor(method.code)}; margin-right: 8px;`"></i>
+                  {{ method.name }}
                 </el-option>
               </el-select>
             </el-form-item>
@@ -175,7 +171,7 @@
       <el-table-column label="支付方式" width="120">
         <template slot-scope="scope">
           <div class="payment-method">
-            <el-tag :type="getMethodColor(scope.row.methodCode)" size="medium">
+            <el-tag :type="getMethodTagType(scope.row.methodCode)" size="medium">
               <i :class="getMethodIcon(scope.row.methodCode)"></i>
               {{ getMethodName(scope.row.methodCode) }}
             </el-tag>
@@ -322,17 +318,13 @@
             style="width: 100%"
             :disabled="editDialog.isEdit"
             @change="handleMethodChange">
-            <el-option label="ABA银行" value="aba">
-              <i class="el-icon-bank-card" style="color: #409EFF; margin-right: 8px;"></i>
-              ABA银行
-            </el-option>
-            <el-option label="汇旺支付" value="huiwang">
-              <i class="el-icon-mobile" style="color: #E6A23C; margin-right: 8px;"></i>
-              汇旺支付
-            </el-option>
-            <el-option label="USDT钱包" value="usdt">
-              <i class="el-icon-coin" style="color: #67C23A; margin-right: 8px;"></i>
-              USDT钱包
+            <el-option 
+              v-for="method in paymentMethods" 
+              :key="method.code" 
+              :label="method.name" 
+              :value="method.code">
+              <i :class="method.icon" :style="`color: ${getMethodColor(method.code)}; margin-right: 8px;`"></i>
+              {{ method.name }}
             </el-option>
           </el-select>
         </el-form-item>
@@ -369,9 +361,12 @@
           </el-form-item>
           <el-form-item label="网络类型" prop="networkType">
             <el-select v-model="editForm.networkType" placeholder="请选择网络类型" style="width: 100%">
-              <el-option label="TRC20 (TRON)" value="TRC20"></el-option>
-              <el-option label="ERC20 (Ethereum)" value="ERC20"></el-option>
-              <el-option label="BSC (Binance Smart Chain)" value="BSC"></el-option>
+              <el-option 
+                v-for="network in usdtNetworks" 
+                :key="network" 
+                :label="network" 
+                :value="network">
+              </el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="二维码上传">
@@ -431,7 +426,7 @@
     <el-dialog title="账户详情" width="700px" :visible.sync="detailDialog.visible">
       <el-descriptions :column="2" border v-if="detailDialog.data">
         <el-descriptions-item label="支付方式">
-          <el-tag :type="getMethodColor(detailDialog.data.methodCode)">
+          <el-tag :type="getMethodTagType(detailDialog.data.methodCode)">
             <i :class="getMethodIcon(detailDialog.data.methodCode)"></i>
             {{ getMethodName(detailDialog.data.methodCode) }}
           </el-tag>
@@ -493,8 +488,20 @@
 </template>
 
 <script>
-// 注意：这里应该导入相应的API，目前使用模拟数据
-// import { getDepositAccountsApi, addDepositAccountApi, updateDepositAccountApi, deleteDepositAccountApi } from '@/api/DepositAccountApi'
+import {
+  getDepositAccountListApi,
+  getDepositAccountDetailApi,
+  addDepositAccountApi,
+  updateDepositAccountApi,
+  deleteDepositAccountApi,
+  toggleDepositAccountStatusApi,
+  batchToggleDepositAccountStatusApi,
+  getDepositAccountStatisticsApi,
+  exportDepositAccountsApi,
+  getPaymentMethodsConfigApi,
+  updateAccountUsageApi,
+  uploadQRCodeApi
+} from '@/api/ZhangHuApi'
 
 export default {
   name: 'DepositAccountManagement',
@@ -520,14 +527,13 @@ export default {
       accountList: [],
       
       // 统计数据
-      statistics: {
-        totalCount: 0,
-        abaCount: 0,
-        huiwangCount: 0,
-        usdtCount: 0,
-        activeCount: 0,
-        totalDailyLimit: '0.00'
-      },
+      statistics: null,
+      
+      // 支付方式配置
+      paymentMethods: [],
+      
+      // USDT网络类型
+      usdtNetworks: ['TRC20', 'ERC20', 'BSC'],
       
       // 编辑对话框
       editDialog: {
@@ -597,24 +603,47 @@ export default {
   },
   
   mounted() {
+    this.loadPaymentMethods();
     this.loadData();
     this.loadStatistics();
   },
   
   methods: {
+    // 加载支付方式配置
+    async loadPaymentMethods() {
+      try {
+        const res = await getPaymentMethodsConfigApi();
+        if (res.code === 1) {
+          this.paymentMethods = res.data || [];
+          // 获取USDT网络类型
+          const usdtMethod = this.paymentMethods.find(m => m.code === 'usdt');
+          if (usdtMethod && usdtMethod.networks) {
+            this.usdtNetworks = usdtMethod.networks;
+          }
+        }
+      } catch (error) {
+        console.error('加载支付方式失败:', error);
+      }
+    },
+    
     // 加载数据
     async loadData() {
       this.loading = true;
       try {
-        // 模拟API调用
-        const mockData = this.getMockData();
-        this.accountList = mockData.list;
-        this.totalCount = mockData.total;
-        this.currentPage = mockData.currentPage;
-        this.pageSize = mockData.pageSize;
+        const params = this.buildQueryParams();
+        const res = await getDepositAccountListApi(params);
+        
+        if (res.code === 1) {
+          this.accountList = res.data.data || [];
+          this.totalCount = parseInt(res.data.total) || 0;
+          this.currentPage = parseInt(res.data.current_page) || 1;
+          this.pageSize = parseInt(res.data.per_page) || 10;
+        } else {
+          this.$message.error(res.message || '获取数据失败');
+        }
       } catch (error) {
         console.error('加载数据失败:', error);
-        this.$message.error('加载数据失败，请稍后重试');
+        this.$message.error('网络错误，请稍后重试');
       } finally {
         this.loading = false;
       }
@@ -623,111 +652,69 @@ export default {
     // 加载统计数据
     async loadStatistics() {
       try {
-        // 模拟统计数据
-        this.statistics = {
-          totalCount: this.accountList.length || 8,
-          abaCount: 2,
-          huiwangCount: 3,
-          usdtCount: 3,
-          activeCount: 7,
-          totalDailyLimit: '405000.00'
-        };
+        const params = this.buildStatisticsParams();
+        const res = await getDepositAccountStatisticsApi(params);
+        
+        if (res.code === 1) {
+          this.statistics = res.data;
+        }
       } catch (error) {
         console.error('加载统计数据失败:', error);
       }
     },
     
-    // 获取模拟数据
-    getMockData() {
-      return {
-        list: [
-          {
-            id: 1,
-            methodCode: 'aba',
-            accountName: 'GOLDEN HORSE CASINO PTE LTD',
-            accountNumber: '001234567890123',
-            bankName: '柬埔寨亚洲银行 (ABA BANK)',
-            phoneNumber: null,
-            walletAddress: null,
-            networkType: null,
-            qrCodeUrl: null,
-            isActive: 1,
-            dailyLimit: 50000.00,
-            balanceLimit: null,
-            usageCount: 156,
-            lastUsedAt: '2025-05-31 14:23:45',
-            remark: 'ABA银行主要收款账户，工作日1-3小时到账',
-            createdAt: '2025-05-30 12:38:41',
-            updatedAt: '2025-05-31 14:23:45'
-          },
-          {
-            id: 2,
-            methodCode: 'aba',
-            accountName: 'GOLDEN HORSE ENTERTAINMENT',
-            accountNumber: '001234567890456',
-            bankName: '柬埔寨亚洲银行 (ABA BANK)',
-            phoneNumber: null,
-            walletAddress: null,
-            networkType: null,
-            qrCodeUrl: null,
-            isActive: 1,
-            dailyLimit: 30000.00,
-            balanceLimit: null,
-            usageCount: 89,
-            lastUsedAt: '2025-05-31 11:15:32',
-            remark: 'ABA银行备用收款账户',
-            createdAt: '2025-05-30 12:38:41',
-            updatedAt: '2025-05-31 11:15:32'
-          },
-          {
-            id: 3,
-            methodCode: 'huiwang',
-            accountName: 'GOLDEN HORSE',
-            accountNumber: 'HW88888888',
-            bankName: null,
-            phoneNumber: '+855 12 345 678',
-            walletAddress: null,
-            networkType: null,
-            qrCodeUrl: null,
-            isActive: 1,
-            dailyLimit: 20000.00,
-            balanceLimit: null,
-            usageCount: 234,
-            lastUsedAt: '2025-05-31 15:42:18',
-            remark: '汇旺主要收款账户，快速到账',
-            createdAt: '2025-05-30 12:38:41',
-            updatedAt: '2025-05-31 15:42:18'
-          },
-          {
-            id: 6,
-            methodCode: 'usdt',
-            accountName: 'GOLDEN HORSE MAIN WALLET',
-            accountNumber: null,
-            bankName: null,
-            phoneNumber: null,
-            walletAddress: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE',
-            networkType: 'TRC20',
-            qrCodeUrl: '/static/img/qr/usdt_trc20_main.png',
-            isActive: 1,
-            dailyLimit: 100000.00,
-            balanceLimit: null,
-            usageCount: 445,
-            lastUsedAt: '2025-05-31 16:08:22',
-            remark: 'USDT-TRC20主钱包，确认后即时到账',
-            createdAt: '2025-05-30 12:38:41',
-            updatedAt: '2025-05-31 16:08:22'
-          }
-        ],
-        total: 8,
-        currentPage: 1,
-        pageSize: 10
+    // 构建查询参数
+    buildQueryParams() {
+      const params = {
+        page: parseInt(this.currentPage),
+        limit: parseInt(this.pageSize)
       };
+
+      // 添加搜索条件
+      if (this.searchForm.methodCode) params.methodCode = this.searchForm.methodCode;
+      if (this.searchForm.isActive !== '') params.isActive = parseInt(this.searchForm.isActive);
+      if (this.searchForm.accountName) params.accountName = this.searchForm.accountName;
+
+      // 处理时间范围
+      if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
+        params.start = this.searchForm.dateRange[0];
+        params.end = this.searchForm.dateRange[1];
+      }
+
+      return params;
+    },
+    
+    // 构建统计参数
+    buildStatisticsParams() {
+      const params = {};
+      
+      if (this.searchForm.methodCode) params.methodCode = this.searchForm.methodCode;
+      if (this.searchForm.isActive !== '') params.isActive = parseInt(this.searchForm.isActive);
+      if (this.searchForm.dateRange && this.searchForm.dateRange.length === 2) {
+        params.start = this.searchForm.dateRange[0];
+        params.end = this.searchForm.dateRange[1];
+      }
+
+      return params;
+    },
+    
+    // 分页处理
+    handleCurrentChange(page) {
+      this.currentPage = parseInt(page);
+      this.loadData();
+    },
+
+    handleSizeChange(size) {
+      this.pageSize = parseInt(size);
+      this.currentPage = 1;
+      this.loadData();
     },
     
     // 搜索
     handleSearch() {
       this.currentPage = 1;
       this.loadData();
+      this.loadStatistics();
     },
     
     // 重置
@@ -740,29 +727,35 @@ export default {
       };
       this.currentPage = 1;
       this.loadData();
+      this.loadStatistics();
     },
     
     // 导出
-    handleExport() {
-      this.$message.success('导出功能开发中...');
+    async handleExport() {
+      try {
+        const params = this.buildQueryParams();
+        delete params.page;
+        delete params.limit;
+        
+        const res = await exportDepositAccountsApi(params);
+        if (res.code === 1) {
+          this.$message.success('导出成功');
+          if (res.data.downloadUrl) {
+            window.open(res.data.downloadUrl);
+          }
+        } else {
+          this.$message.error(res.message || '导出失败');
+        }
+      } catch (error) {
+        console.error('导出失败:', error);
+        this.$message.error('导出失败，请稍后重试');
+      }
     },
     
     // 刷新
     handleRefresh() {
       this.loadData();
       this.loadStatistics();
-    },
-    
-    // 分页
-    handleCurrentChange(page) {
-      this.currentPage = page;
-      this.loadData();
-    },
-    
-    handleSizeChange(size) {
-      this.pageSize = size;
-      this.currentPage = 1;
-      this.loadData();
     },
     
     // 选择变化
@@ -775,10 +768,23 @@ export default {
       if (this.selectedRows.length === 0) return;
       this.$confirm(`确定要启用选中的 ${this.selectedRows.length} 个账户吗？`, '确认操作', {
         type: 'warning'
-      }).then(() => {
-        // TODO: 调用批量启用API
-        this.$message.success('批量启用成功');
-        this.loadData();
+      }).then(async () => {
+        try {
+          const ids = this.selectedRows.map(row => row.id);
+          const res = await batchToggleDepositAccountStatusApi({ ids, isActive: 1 });
+          
+          if (res.code === 1) {
+            this.$message.success(res.message);
+            this.selectedRows = [];
+            this.loadData();
+            this.loadStatistics();
+          } else {
+            this.$message.error(res.message || '批量启用失败');
+          }
+        } catch (error) {
+          console.error('批量启用失败:', error);
+          this.$message.error('操作失败，请稍后重试');
+        }
       });
     },
     
@@ -787,26 +793,50 @@ export default {
       if (this.selectedRows.length === 0) return;
       this.$confirm(`确定要禁用选中的 ${this.selectedRows.length} 个账户吗？`, '确认操作', {
         type: 'warning'
-      }).then(() => {
-        // TODO: 调用批量禁用API
-        this.$message.success('批量禁用成功');
-        this.loadData();
+      }).then(async () => {
+        try {
+          const ids = this.selectedRows.map(row => row.id);
+          const res = await batchToggleDepositAccountStatusApi({ ids, isActive: 0 });
+          
+          if (res.code === 1) {
+            this.$message.success(res.message);
+            this.selectedRows = [];
+            this.loadData();
+            this.loadStatistics();
+          } else {
+            this.$message.error(res.message || '批量禁用失败');
+          }
+        } catch (error) {
+          console.error('批量禁用失败:', error);
+          this.$message.error('操作失败，请稍后重试');
+        }
       });
     },
     
     // 状态切换
-    handleStatusChange(row) {
+    async handleStatusChange(row) {
       const status = row.isActive ? '启用' : '禁用';
-      this.$confirm(`确定要${status}此账户吗？`, '确认操作', {
-        type: 'warning'
-      }).then(() => {
-        // TODO: 调用状态更新API
-        this.$message.success(`${status}成功`);
-        this.loadData();
-      }).catch(() => {
+      
+      try {
+        const res = await toggleDepositAccountStatusApi({
+          id: row.id,
+          isActive: row.isActive
+        });
+        
+        if (res.code === 1) {
+          this.$message.success(res.message);
+          this.loadStatistics();
+        } else {
+          this.$message.error(res.message || `${status}失败`);
+          // 恢复原状态
+          row.isActive = row.isActive ? 0 : 1;
+        }
+      } catch (error) {
+        console.error('切换状态失败:', error);
+        this.$message.error('操作失败，请稍后重试');
         // 恢复原状态
         row.isActive = row.isActive ? 0 : 1;
-      });
+      }
     },
     
     // 显示添加对话框
@@ -824,9 +854,19 @@ export default {
     },
     
     // 显示详情
-    showDetail(row) {
-      this.detailDialog.data = { ...row };
-      this.detailDialog.visible = true;
+    async showDetail(row) {
+      try {
+        const res = await getDepositAccountDetailApi({ id: row.id });
+        if (res.code === 1) {
+          this.detailDialog.data = res.data;
+          this.detailDialog.visible = true;
+        } else {
+          this.$message.error(res.message || '获取详情失败');
+        }
+      } catch (error) {
+        console.error('获取详情失败:', error);
+        this.$message.error('获取详情失败，请稍后重试');
+      }
     },
     
     // 显示二维码
@@ -840,10 +880,20 @@ export default {
     handleDelete(row) {
       this.$confirm(`确定要删除账户"${row.accountName}"吗？此操作不可恢复！`, '确认删除', {
         type: 'error'
-      }).then(() => {
-        // TODO: 调用删除API
-        this.$message.success('删除成功');
-        this.loadData();
+      }).then(async () => {
+        try {
+          const res = await deleteDepositAccountApi({ id: row.id });
+          if (res.code === 1) {
+            this.$message.success(res.message);
+            this.loadData();
+            this.loadStatistics();
+          } else {
+            this.$message.error(res.message || '删除失败');
+          }
+        } catch (error) {
+          console.error('删除失败:', error);
+          this.$message.error('操作失败，请稍后重试');
+        }
       });
     },
     
@@ -860,18 +910,33 @@ export default {
     
     // 保存
     handleSave() {
-      this.$refs.editForm.validate((valid) => {
+      this.$refs.editForm.validate(async (valid) => {
         if (!valid) return;
         
         this.editDialog.loading = true;
         
-        // TODO: 调用保存API
-        setTimeout(() => {
+        try {
+          let res;
+          if (this.editDialog.isEdit) {
+            res = await updateDepositAccountApi(this.editForm);
+          } else {
+            res = await addDepositAccountApi(this.editForm);
+          }
+          
+          if (res.code === 1) {
+            this.$message.success(res.message);
+            this.editDialog.visible = false;
+            this.loadData();
+            this.loadStatistics();
+          } else {
+            this.$message.error(res.message || '操作失败');
+          }
+        } catch (error) {
+          console.error('保存失败:', error);
+          this.$message.error('操作失败，请稍后重试');
+        } finally {
           this.editDialog.loading = false;
-          this.editDialog.visible = false;
-          this.$message.success(this.editDialog.isEdit ? '编辑成功' : '添加成功');
-          this.loadData();
-        }, 1000);
+        }
       });
     },
     
@@ -899,8 +964,12 @@ export default {
     
     // 二维码上传成功
     handleQRSuccess(res, file) {
-      this.editForm.qrCodeUrl = res.data.url;
-      this.$message.success('二维码上传成功');
+      if (res.code === 1) {
+        this.editForm.qrCodeUrl = res.data.url;
+        this.$message.success('二维码上传成功');
+      } else {
+        this.$message.error(res.message || '上传失败');
+      }
     },
     
     // 二维码上传前验证
@@ -937,32 +1006,34 @@ export default {
     
     // 获取支付方式名称
     getMethodName(methodCode) {
-      const names = {
-        'aba': 'ABA银行',
-        'huiwang': '汇旺支付',
-        'usdt': 'USDT钱包'
-      };
-      return names[methodCode] || methodCode;
+      const method = this.paymentMethods.find(m => m.code === methodCode);
+      return method ? method.name : methodCode;
     },
     
     // 获取支付方式图标
     getMethodIcon(methodCode) {
-      const icons = {
-        'aba': 'el-icon-bank-card',
-        'huiwang': 'el-icon-mobile',
-        'usdt': 'el-icon-coin'
-      };
-      return icons[methodCode] || 'el-icon-s-finance';
+      const method = this.paymentMethods.find(m => m.code === methodCode);
+      return method ? method.icon : 'el-icon-s-finance';
     },
     
     // 获取支付方式颜色
     getMethodColor(methodCode) {
       const colors = {
+        'aba': '#409EFF',
+        'huiwang': '#E6A23C',
+        'usdt': '#67C23A'
+      };
+      return colors[methodCode] || '#909399';
+    },
+    
+    // 获取支付方式标签类型
+    getMethodTagType(methodCode) {
+      const types = {
         'aba': 'primary',
         'huiwang': 'warning',
         'usdt': 'success'
       };
-      return colors[methodCode] || 'info';
+      return types[methodCode] || 'info';
     },
     
     // 格式化钱包地址
