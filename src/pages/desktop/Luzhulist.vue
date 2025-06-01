@@ -225,7 +225,7 @@ export default {
         }
       })
 
-      let url = `${baseUrl}/static/luzhu/h5.html?gameType=${this.searchTtypeId.game_type}&tableId=${this.searchTtypeId.table_id}&xueNumber=${this.searchTtypeId.xue}&pu=${this.searchTtypeId.pu}&start=${this.searchTtypeId.start}&end=${this.searchTtypeId.end}&token=${this.searchTtypeId.token}&admin_type=${this.searchTtypeId.admin_type}&tableName=${tableName}`
+      let url = `${baseUrl}/static/luzhu/pc_only.html?gameType=${this.searchTtypeId.game_type}&tableId=${this.searchTtypeId.table_id}&xueNumber=${this.searchTtypeId.xue}&pu=${this.searchTtypeId.pu}&start=${this.searchTtypeId.start}&end=${this.searchTtypeId.end}&token=${this.searchTtypeId.token}&admin_type=${this.searchTtypeId.admin_type}&tableName=${tableName}`
       window.open(url, "_blank");
     },
     handleEndDate() {

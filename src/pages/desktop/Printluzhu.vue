@@ -233,7 +233,7 @@ export default {
       switch(this.searchTtypeId.game_type) {
         case this.gameList[0].gameType: 
         case this.gameList[1].gameType:
-          page = 'h5'
+          page = 'pc_only'
         break
         case this.gameList[2].gameType: 
           page = 'luzhu_niu'

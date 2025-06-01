@@ -91,48 +91,7 @@
       </el-form>
     </div>
     
-    <!-- 统计信息 -->
-    <div class="statistics-section" v-if="statistics">
-      <el-row :gutter="20">
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value">${{ statistics.totalAmount }}</div>
-            <div class="stat-label">总提现金额</div>
-          </div>
-        </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value">${{ statistics.totalFee }}</div>
-            <div class="stat-label">总手续费</div>
-          </div>
-        </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value">${{ statistics.totalActual }}</div>
-            <div class="stat-label">总实际到账</div>
-          </div>
-        </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value stat-pending">{{ statistics.pendingCount }}</div>
-            <div class="stat-label">待审核</div>
-          </div>
-        </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value stat-approved">{{ statistics.approvedCount }}</div>
-            <div class="stat-label">已通过</div>
-          </div>
-        </el-col>
-        <el-col :span="4">
-          <div class="stat-item">
-            <div class="stat-value stat-rejected">{{ statistics.rejectedCount }}</div>
-            <div class="stat-label">已拒绝</div>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
-    
+   
     <!-- 操作按钮区域 -->
     <div class="action-section">
       <el-button type="primary" plain @click="handleBatchApprove" :disabled="!selectedRows.length">
