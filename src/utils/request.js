@@ -29,13 +29,9 @@ axios.interceptors.request.use(
       ID
     } = store.state.user.user.info
 
-    // axios.defaults.headers['Content-Type'] = 'multipart/form-data;charset=utf-8'
     config.headers = {
-      // 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       'Content-Type': 'application/x-www-form-urlencoded',
       'x-csrf-token': token,
-      // 'x-user-id': ID
-      //'token':'9bc019269cac8e37ceae66097cb198a8',
     }
 
 

@@ -2,14 +2,15 @@
   <div class="task console">
     <el-button :type="primary" plain style="margin-bottom: 10px;" @click="restart" v-html="weihu"></el-button>
     <el-button type="primary" plain style="margin-bottom: 10px;" @click="stop">清除全体用户登录日志</el-button>
-    <el-button type="primary  " plain style="margin-bottom: 10px;" @click="luzhu">露珠数据备份</el-button>
-    <el-button type="primary  " plain style="margin-bottom: 10px;" @click="order">投注记录数据备份</el-button>
-    <el-button :type="registerprimary  " plain style="margin-bottom: 10px;" @click="getRegisters" v-html="registers">开启注册</el-button>
+    <el-button type="primary" plain style="margin-bottom: 10px;" @click="luzhu">露珠数据备份</el-button>
+    <el-button type="primary" plain style="margin-bottom: 10px;" @click="order">投注记录数据备份</el-button>
+    <!-- <el-button :type="registerprimary  " plain style="margin-bottom: 10px;" @click="getRegisters" v-html="registers">开启注册</el-button> -->
   </div>
 </template>
 
 <script>
   import ConsoleCard from "@/components/dashboard/ConsoleCard"
+
   import {
     getConfigInfoApi,getConfigEditApi,getClearTokenApi,getMysqlBackupsApi,getMysqlRecordsApi
   } from '@/api/CountApi'
@@ -30,6 +31,7 @@
     mounted() {
       //获取配置
       this.getConfigInfo();
+
     },
     methods: {
       getConfigInfo(){
