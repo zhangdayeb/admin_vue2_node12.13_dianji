@@ -65,9 +65,17 @@
     <el-table-column label="洗码金额" width="100" prop="money_freeze">
         <template slot-scope="scope">
           <el-button type="primary" @click="showMoneyDialog(scope.row,91)">{{scope.row.money_freeze}}</el-button>
-          <!-- <el-button type="primary">{{scope.row.money_freeze}}</el-button> -->
         </template>
     </el-table-column>
+
+    <el-table-column label="洗码费余额" width="100" prop="rebate_balance">
+  <template slot-scope="scope">
+    <el-button type="success" @click="showMoneyDialog(scope.row,88)">
+      {{scope.row.rebate_balance || 0}}
+    </el-button>
+  </template>
+</el-table-column>
+
       <el-table-column label="占成比例%" width="100" prop="agent_rate" />
       <el-table-column label="洗码率%" width="100" prop="xima_lv" />
       <el-table-column label="在线状态" width="80" prop="online">
@@ -167,6 +175,10 @@
         <el-form-item label="冻结金额￥">
           <el-input v-model="form.money_freeze" readonly="" placeholder="请输入冻结余额" @keyup.enter.native="onSubmit"></el-input>
         </el-form-item>
+        <!-- 在冻结金额后面添加 -->
+<el-form-item label="洗码费余额￥">
+  <el-input v-model="form.rebate_balance" readonly="" placeholder="洗码费余额" @keyup.enter.native="onSubmit"></el-input>
+</el-form-item>
         <template v-if="auth == 1">
           <el-form-item label="代理ID" v-if="form.agent_id > 0 && typeEdit == 'edit' ">
             <template v-if="typeEdit == 'edit'" style="margin-right: 20rem;">
@@ -649,25 +661,26 @@
         })
       },
       showMoneyDialog: function(row, type) {
-        this.moneyForm = row;
-        this.money_change_type = '';
-        this.change_money = '';
-        this.money_ststus = type;
-        if (type == 90) {
-          this.dialogMoneyTitle = '编辑可用余额';
-        } else {
-          this.dialogMoneyTitle = '编辑冻结余额';
-        }
-        this.moneyDialogVisible = true;
-
-      },
+  this.moneyForm = row;
+  this.money_change_type = '';
+  this.change_money = '';
+  this.money_ststus = type;
+  if (type == 90) {
+    this.dialogMoneyTitle = '编辑可用余额';
+  } else if (type == 91) {
+    this.dialogMoneyTitle = '编辑冻结余额';
+  } else if (type == 92) {
+    this.dialogMoneyTitle = '编辑洗码费余额';  // 新增
+  }
+  this.moneyDialogVisible = true;
+},
       onMoneySubmit: function() {
         //这里要修改方法
         getMoneyEditApi({
           money_change_type: this.money_change_type,
           uid: this.moneyForm.id,
           change_money: this.change_money,
-          money_ststus: this.money_ststus //90可用余额   91冻结余额 93 积分
+          money_ststus: this.money_ststus //90可用余额   91冻结余额 93 积分 88 洗码余额
         }).then(res => {
           if (res.code === 1) {
             this.moneyDialogVisible = false;
@@ -768,6 +781,7 @@
             'nickname': nickname,
             'money_balance': 0,
             'money_freeze': 0,
+            'rebate_balance': 0,  // 新增
             'agent_rate': 0
           };
         }
