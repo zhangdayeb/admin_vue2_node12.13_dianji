@@ -78,7 +78,7 @@
   import {
     quillEditor
   } from 'vue-quill-editor'
-  import {getUploadDataApi} from '@/api/UploadApi'
+  import {getUploadDataApi} from '@/api/uploadApi'
   import 'quill/dist/quill.core.css'
   import quillConfig from "@/utils/quill-config.js";
   import 'quill/dist/quill.snow.css'

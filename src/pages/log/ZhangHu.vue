@@ -372,13 +372,28 @@
           <el-form-item label="二维码上传">
             <el-upload
               class="qr-uploader"
-              action="/api/upload/qrcode"
+              :action="uploadQRCodeUrl"
+              name="file"
+              :headers="uploadHeaders"
+              :data="uploadData"
               :show-file-list="false"
               :on-success="handleQRSuccess"
-              :before-upload="beforeQRUpload">
+              :on-error="handleQRError"
+              :on-progress="handleQRProgress"
+              :before-upload="beforeQRUpload"
+              accept=".jpg,.jpeg,.png,.gif,.bmp">
+              
               <img v-if="editForm.qrCodeUrl" :src="editForm.qrCodeUrl" class="qr-image">
-              <i v-else class="el-icon-plus qr-uploader-icon"></i>
+              <div v-else class="qr-uploader-placeholder">
+                <i class="el-icon-plus qr-uploader-icon"></i>
+                <div class="upload-text">点击上传二维码</div>
+              </div>
             </el-upload>
+            
+            <!-- 上传提示 -->
+            <div class="upload-tip">
+              <span class="tip-text">支持 JPG、PNG、GIF、BMP 格式，文件大小不超过 2MB</span>
+            </div>
           </el-form-item>
         </template>
 
@@ -499,9 +514,10 @@ import {
   getDepositAccountStatisticsApi,
   exportDepositAccountsApi,
   getPaymentMethodsConfigApi,
-  updateAccountUsageApi,
-  uploadQRCodeApi
+  updateAccountUsageApi
 } from '@/api/ZhangHuApi'
+import { baseUrl } from '@/utils/config'
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'DepositAccountManagement',
@@ -534,6 +550,16 @@ export default {
       
       // USDT网络类型
       usdtNetworks: ['TRC20', 'ERC20', 'BSC'],
+      
+      // 上传配置
+      uploadQRCodeUrl: baseUrl + '/upload/qrcode',
+      uploadHeaders: {
+        'Authorization': 'Bearer ' + getToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      uploadData: {
+        type: 'qrcode'
+      },
       
       // 编辑对话框
       editDialog: {
@@ -964,6 +990,9 @@ export default {
     
     // 二维码上传成功
     handleQRSuccess(res, file) {
+      console.log('上传响应:', res);
+      
+      // 根据后端返回的数据结构处理
       if (res.code === 1) {
         this.editForm.qrCodeUrl = res.data.url;
         this.$message.success('二维码上传成功');
@@ -974,16 +1003,39 @@ export default {
     
     // 二维码上传前验证
     beforeQRUpload(file) {
+      // 检查文件类型
       const isImage = file.type.indexOf('image/') === 0;
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      
       if (!isImage) {
         this.$message.error('只能上传图片文件!');
+        return false;
       }
+
+      // 检查文件大小 (2MB)
+      const isLt2M = file.size / 1024 / 1024 < 2;
       if (!isLt2M) {
         this.$message.error('图片大小不能超过 2MB!');
+        return false;
       }
-      return isImage && isLt2M;
+
+      // 检查图片格式
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.$message.error('只支持 JPG、PNG、GIF、BMP 格式的图片!');
+        return false;
+      }
+
+      return true;
+    },
+    
+    // 上传错误处理
+    handleQRError(err, file, fileList) {
+      console.error('上传失败:', err);
+      this.$message.error('上传失败，请重试');
+    },
+    
+    // 上传进度处理
+    handleQRProgress(event, file, fileList) {
+      console.log('上传进度:', Math.round(event.percent) + '%');
     },
     
     // 复制到剪贴板
@@ -1228,32 +1280,56 @@ export default {
   // 二维码上传样式
   .qr-uploader {
     :deep(.el-upload) {
-      border: 1px dashed #d9d9d9;
-      border-radius: 6px;
+      border: 2px dashed #d9d9d9;
+      border-radius: 8px;
       cursor: pointer;
       position: relative;
       overflow: hidden;
       width: 148px;
       height: 148px;
+      transition: border-color 0.3s;
       
       &:hover {
         border-color: #409EFF;
       }
     }
     
+    .qr-uploader-placeholder {
+      width: 148px;
+      height: 148px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+    }
+    
     .qr-uploader-icon {
       font-size: 28px;
       color: #8c939d;
-      width: 148px;
-      height: 148px;
-      line-height: 148px;
-      text-align: center;
+      margin-bottom: 8px;
+    }
+    
+    .upload-text {
+      font-size: 12px;
+      color: #8c939d;
     }
     
     .qr-image {
       width: 148px;
       height: 148px;
       display: block;
+      object-fit: cover;
+    }
+  }
+  
+  .upload-tip {
+    margin-top: 8px;
+    
+    .tip-text {
+      font-size: 12px;
+      color: #909399;
+      line-height: 1.4;
     }
   }
   

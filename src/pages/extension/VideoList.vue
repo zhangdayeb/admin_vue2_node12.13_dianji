@@ -163,7 +163,7 @@
 <script>
   var i=0;
   import {getVideoListApi, getVideoDelApi,getVideoEditApi,getVideoAddApi,getVideoAuthApi} from '@/api/VideoApi'
-  import {getUploadVideoApi} from '@/api/UploadApi'
+  import {getUploadVideoApi} from '@/api/uploadApi'
   import {getVideoVipListApi,getVideoVipFastApi,getVideoVipEndApi} from '@/api/VideoVipApi'
   import {getVideoTypeApi,getVideoTypeListApi, getVideoTypeDelApi,getVideoTypeEditApi,getVideoTypeAddApi} from '@/api/VideoTypeApi'
   import axios from "axios"
