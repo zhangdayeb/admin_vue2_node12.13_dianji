@@ -753,8 +753,9 @@ export default {
     getStatusType(status) {
       switch (status) {
         case 0: return 'warning';  // 待审核
-        case 1: return 'success';  // 已通过
-        case 2: return 'danger';   // 已拒绝
+        case 1: return 'warning';  // 待审核
+        case 2: return 'success';   // 已通过
+        case 3: return 'danger';   // 已拒绝
         default: return 'info';
       }
     },
@@ -763,8 +764,9 @@ export default {
     getStatusText(status) {
       switch (status) {
         case 0: return '待审核';
-        case 1: return '已通过';
-        case 2: return '已拒绝';
+        case 1: return '处理中';
+        case 2: return '已通过';
+        case 3: return '已拒绝';
         default: return '未知';
       }
     },

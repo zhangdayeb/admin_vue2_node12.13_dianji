@@ -13,6 +13,13 @@
           </el-option>
         </el-select>
       </el-col>
+      <!-- 在现有的搜索行中添加 -->
+<el-col :span="3">
+  <el-input placeholder="靴号" v-model="searchTtypeId.xue" clearable></el-input>
+</el-col>
+<el-col :span="3">
+  <el-input placeholder="铺号" v-model="searchTtypeId.pu" clearable></el-input>
+</el-col>
     
       <el-col :span="4">
         <el-button class="page-content-btn" @click="search">搜索</el-button>
@@ -214,10 +221,10 @@ export default {
         this.$message({message:'请选择游戏靴号', type: 'warning'});
         return
       }
-      // if(this.searchTtypeId.pu.trim().length < 1) {
-      //   this.$message({message:'请选择游戏铺号', type: 'warning'});
-      //   return
-      // }
+      if(this.searchTtypeId.pu.trim().length < 1) {
+        this.$message({message:'请选择游戏铺号', type: 'warning'});
+        return
+      }
       let tableName = ''
       this.options.forEach(el => {
         if(el.id == this.searchTtypeId.table_id) {
